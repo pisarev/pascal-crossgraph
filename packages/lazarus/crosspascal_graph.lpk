@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Package Version="5">
+    <PathDelim Value="\"/>
+    <Name Value="crosspascal_graph"/>
+    <Author Value="Yuriy Pisarev"/>
+    <CompilerOptions>
+      <Version Value="11"/>
+      <PathDelim Value="\"/>
+      <SearchPaths>
+        <IncludeFiles Value="..\..\..\pascal-mathparser\src"/>
+        <OtherUnitFiles Value="..\..\src"/>
+        <UnitOutputDir Value="lib\$(TargetCPU)-$(TargetOS)"/>
+      </SearchPaths>
+      <Parsing>
+        <SyntaxOptions>
+          <SyntaxMode Value="Delphi"/>
+        </SyntaxOptions>
+      </Parsing>
+      <CodeGeneration>
+        <Optimizations>
+          <OptimizationLevel Value="2"/>
+        </Optimizations>
+      </CodeGeneration>
+    </CompilerOptions>
+    <Description Value="Plotting on top of MathParser: the computation core and the visual component"/>
+    <License Value="MIT"/>
+    <Version Major="1"/>
+    <Files>
+      <Item>
+        <Filename Value="..\..\src\CrossGraph.Types.pas"/>
+        <UnitName Value="CrossGraph.Types"/>
+      </Item>
+      <Item>
+        <Filename Value="..\..\src\CrossGraph.Geometry.pas"/>
+        <UnitName Value="CrossGraph.Geometry"/>
+      </Item>
+      <Item>
+        <Filename Value="..\..\src\CrossGraph.Engine.pas"/>
+        <UnitName Value="CrossGraph.Engine"/>
+      </Item>
+      <Item>
+        <Filename Value="..\..\src\CrossGraph.pas"/>
+        <UnitName Value="CrossGraph"/>
+        <HasRegisterProc Value="True"/>
+      </Item>
+    </Files>
+    <RequiredPkgs>
+      <Item>
+        <PackageName Value="crosspascal_parserjit"/>
+      </Item>
+      <Item>
+        <PackageName Value="crosspascal_parser"/>
+      </Item>
+      <Item>
+        <PackageName Value="LCL"/>
+      </Item>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>
