@@ -15,24 +15,21 @@ interface
 
 uses
   {$IFDEF FPC}
-  Windows, Messages, SysUtils, Classes, extctrls, Contnrs, Controls, Graphics,
-  BaseTypes, ExactTimer, FastList, CrossGraph.Types, CrossGraph.Geometry,
-  CrossGraph.Engine, CrossVision.Geometry,
-  CrossVision.Geometry.Types, TextConsts, Numeration, NumberUtils,
+  Windows, Messages, SysUtils, Classes, extctrls, Contnrs, Controls, Graphics, BaseTypes,
+  ExactTimer, FastList, CrossGraph.Types, CrossGraph.Geometry, CrossGraph.Engine,
+  CrossVision.Geometry, CrossVision.Geometry.Types, TextConsts, Numeration, NumberUtils,
   Parser, ParseTypes, Thread, Types, ValueTypes;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
   WinApi.Windows, Winapi.Messages, Winapi.GDIPOBJ, Winapi.GDIPAPI, System.SysUtils,
   System.Classes, System.Contnrs, Vcl.Controls, Vcl.Graphics, BaseTypes, ExactTimer,
-  FastList, CrossGraph.Types, CrossGraph.Geometry, CrossGraph.Engine,
-  CrossVision.Geometry,
-  CrossVision.Geometry.Types, TextConsts, Numeration, NumberUtils, Parser,
-  ParseTypes, Thread, Types, ValueTypes;
+  FastList, CrossGraph.Types, CrossGraph.Geometry, CrossGraph.Engine, CrossVision.Geometry,
+  CrossVision.Geometry.Types, TextConsts, Numeration, NumberUtils, Parser, ParseTypes,
+  Thread, Types, ValueTypes;
   {$ELSE}
-  Windows, Messages, GDIPOBJ, GDIPAPI, SysUtils, Classes, Contnrs, Controls,
-  Graphics, BaseTypes, ExactTimer, FastList, CrossGraph.Types,
-  CrossGraph.Geometry, CrossGraph.Engine, CrossVision.Geometry,
-  CrossVision.Geometry.Types, TextConsts, Numeration, NumberUtils,
+  Windows, Messages, GDIPOBJ, GDIPAPI, SysUtils, Classes, Contnrs, Controls, Graphics,
+  BaseTypes, ExactTimer, FastList, CrossGraph.Types, CrossGraph.Geometry, CrossGraph.Engine,
+  CrossVision.Geometry, CrossVision.Geometry.Types, TextConsts, Numeration, NumberUtils,
   Parser, ParseTypes, Thread, Types, ValueTypes;
   {$ENDIF}
   {$ENDIF}
@@ -543,15 +540,15 @@ implementation
 
 uses
   {$IFDEF FPC}
-  Forms, Math, Notifier, MemoryUtils, NumberConsts, ParseConsts, ParseErrors,
-  ParseUtils, StrUtils, TextUtils, ThreadUtils, ValueUtils;
+  Forms, Math, Notifier, MemoryUtils, NumberConsts, ParseConsts, ParseErrors, ParseUtils,
+  StrUtils, TextUtils, ThreadUtils, ValueUtils;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
   Vcl.Forms, System.UITypes, Math, Notifier, MemoryUtils, NumberConsts, ParseConsts,
   ParseErrors, ParseUtils, StrUtils, TextUtils, ThreadUtils, ValueUtils;
   {$ELSE}
-  Forms, Math, Notifier, MemoryUtils, NumberConsts, ParseConsts, ParseErrors,
-  ParseUtils, StrUtils, TextUtils, ThreadUtils, ValueUtils;
+  Forms, Math, Notifier, MemoryUtils, NumberConsts, ParseConsts, ParseErrors, ParseUtils,
+  StrUtils, TextUtils, ThreadUtils, ValueUtils;
   {$ENDIF}
   {$ENDIF}
 
@@ -675,7 +672,8 @@ var
   I, J: Integer;
 begin
   I := High(Target);
-  if I < 0 then Result := MakePlace(0, 0)
+  if I < 0 then
+    Result := MakePlace(0, 0)
   else begin
     J := High(Target[I]);
     if J < 0 then
@@ -1763,7 +1761,8 @@ end;
 
 function TGraph.GetCompute(const CS: TCoordinateSystem): TComputeMethod;
 begin
-  if CS = csPolar then Result := FEngine.ComputePolar
+  if CS = csPolar then
+    Result := FEngine.ComputePolar
   else
     Result := FEngine.ComputeRectangular;
 end;
@@ -2546,4 +2545,5 @@ begin
     Build;
   end;
 end;
+
 end.

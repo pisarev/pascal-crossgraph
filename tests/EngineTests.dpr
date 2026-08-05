@@ -33,8 +33,7 @@ uses
   {$ELSE}
   Winapi.Windows, System.SysUtils, System.Math, System.Classes, System.Types,
   {$ENDIF}
-  CrossVision.Geometry.Types, CrossGraph.Types, CrossGraph.Geometry,
-  CrossGraph.Engine;
+  CrossVision.Geometry.Types, CrossGraph.Types, CrossGraph.Geometry, CrossGraph.Engine;
 
 {$IFDEF FPC}
 function GetTickCount: LongWord;
@@ -232,7 +231,10 @@ begin
   Engine := TGraphEngine.Create(nil);
   try
     Engine.Size := TSize.Create(CanvasSide, CanvasSide);
-    if Polar then Engine.CS := csPolar else Engine.CS := csRectangular;
+    if Polar then
+      Engine.CS := csPolar
+    else
+      Engine.CS := csRectangular;
     Engine.MaxX := MaxX;
     Engine.MaxY := MaxX;
     Engine.Overlap := True;
@@ -291,7 +293,10 @@ begin
   Engine := TGraphEngine.Create(nil);
   try
     Engine.Size := TSize.Create(CanvasSide, CanvasSide);
-    if Polar then Engine.CS := csPolar else Engine.CS := csRectangular;
+    if Polar then
+      Engine.CS := csPolar
+    else
+      Engine.CS := csRectangular;
     Engine.MaxX := MaxX;
     Engine.MaxY := MaxX;
     Engine.Overlap := True;
@@ -327,7 +332,10 @@ begin
   Engine := TGraphEngine.Create(nil);
   try
     Engine.Size := TSize.Create(CanvasSide, CanvasSide);
-    if Polar then Engine.CS := csPolar else Engine.CS := csRectangular;
+    if Polar then
+      Engine.CS := csPolar
+    else
+      Engine.CS := csRectangular;
     Engine.MaxX := MaxX;
     Engine.MaxY := MaxX;
     Engine.Overlap := True;
@@ -373,7 +381,10 @@ begin
   Engine := TGraphEngine.Create(nil);
   try
     Engine.Size := TSize.Create(CanvasSide, CanvasSide);
-    if Polar then Engine.CS := csPolar else Engine.CS := csRectangular;
+    if Polar then
+      Engine.CS := csPolar
+    else
+      Engine.CS := csRectangular;
     Engine.MaxX := MaxX;
     Engine.MaxY := MaxX;
     Engine.Overlap := False;
@@ -441,7 +452,10 @@ begin
   try
     Engine.OnResultReady := Waiter.Handle;
     Engine.Size := TSize.Create(CanvasSide, CanvasSide);
-    if Polar then Engine.CS := csPolar else Engine.CS := csRectangular;
+    if Polar then
+      Engine.CS := csPolar
+    else
+      Engine.CS := csRectangular;
     Engine.MaxX := MaxX;
     Engine.MaxY := MaxY;
     Engine.Overlap := False;
@@ -558,7 +572,10 @@ begin
   Engine := TGraphEngine.Create(nil);
   try
     Engine.Size := TSize.Create(CanvasSide, CanvasSide);
-    if Polar then Engine.CS := csPolar else Engine.CS := csRectangular;
+    if Polar then
+      Engine.CS := csPolar
+    else
+      Engine.CS := csRectangular;
     Engine.MarkSpacing := Spacing;
     Engine.Overlap := False;
     Engine.Extreme := True;

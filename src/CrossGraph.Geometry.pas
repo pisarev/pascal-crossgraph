@@ -20,8 +20,7 @@ uses
   {$IFDEF FPC}
   SysUtils, Math, Types, CrossVision.Geometry, CrossVision.Geometry.Types;
   {$ELSE}
-  System.SysUtils, System.Math, System.Types, CrossVision.Geometry,
-  CrossVision.Geometry.Types;
+  System.SysUtils, System.Math, System.Types, CrossVision.Geometry, CrossVision.Geometry.Types;
   {$ENDIF}
 
 const
@@ -221,4 +220,5 @@ function Inside(const Point: TPointD; const Area: TRectD): Boolean;
 begin
   Result := Inside(Point.X, Point.Y, Area);
 end;
+
 end.

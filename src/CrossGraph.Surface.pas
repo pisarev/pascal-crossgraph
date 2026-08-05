@@ -22,8 +22,8 @@ uses
   {$ELSE}
   System.SysUtils, System.Classes, System.Math,
   {$ENDIF}
-  CrossVision.Geometry.Types, CrossGraph.Types, ParseJit.Parser, Parser,
-  ParseTypes, ValueTypes, ValueUtils, Notifier;
+  CrossVision.Geometry.Types, CrossGraph.Types, ParseJit.Parser, Parser, ParseTypes,
+  ValueTypes, ValueUtils, Notifier;
 
 type
   TSurface = record
@@ -179,7 +179,8 @@ var
   var
     Part: Double;
   begin
-    if Abs(BValue - AValue) < 1E-300 then Part := 0.5
+    if Abs(BValue - AValue) < 1E-300 then
+      Part := 0.5
     else
       Part := -AValue / (BValue - AValue);
     Part := EnsureRange(Part, 0, 1);
@@ -246,4 +247,5 @@ begin
       end;
     end;
 end;
+
 end.

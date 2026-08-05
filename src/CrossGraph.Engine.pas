@@ -22,10 +22,9 @@ uses
   {$ELSE}
   Winapi.Windows, System.SysUtils, System.Classes, System.Contnrs, System.Types,
   {$ENDIF}
-  BaseTypes, FastList, TextConsts, NumberUtils, Parser,
-  ParseJit.Parser,
-  ParseTypes, Thread, ValueTypes, CrossVision.Geometry, CrossVision.Geometry.Types,
-  CrossGraph.Types, CrossGraph.Geometry;
+  BaseTypes, FastList, TextConsts, NumberUtils, Parser, ParseJit.Parser, ParseTypes,
+  Thread, ValueTypes, CrossVision.Geometry, CrossVision.Geometry.Types, CrossGraph.Types,
+  CrossGraph.Geometry;
 
 type
   PCoordinateSystem = ^TCoordinateSystem;
@@ -564,11 +563,11 @@ implementation
 
 uses
   {$IFDEF FPC}
-  Math, Notifier, MemoryUtils, NumberConsts, ParseConsts, ParseErrors,
-  ParseUtils, TextUtils, ThreadUtils, ValueUtils;
+  Math, Notifier, MemoryUtils, NumberConsts, ParseConsts, ParseErrors, ParseUtils,
+  TextUtils, ThreadUtils, ValueUtils;
   {$ELSE}
-  System.Math, Notifier, MemoryUtils, NumberConsts, ParseConsts,
-  ParseErrors, ParseUtils, TextUtils, ThreadUtils, ValueUtils;
+  System.Math, Notifier, MemoryUtils, NumberConsts, ParseConsts, ParseErrors, ParseUtils,
+  TextUtils, ThreadUtils, ValueUtils;
   {$ENDIF}
 
 {$IFDEF FPC}
@@ -810,7 +809,8 @@ var
   I, J: Integer;
 begin
   I := High(Target);
-  if I < 0 then Result := MakePlace(0, 0)
+  if I < 0 then
+    Result := MakePlace(0, 0)
   else begin
     J := High(Target[I]);
     if J < 0 then
@@ -1783,7 +1783,7 @@ var
   Kept: array of Boolean;
   Crowded: Boolean;
   Span, Chord, Pixel, Bound: Double;
-  Near: TPointD;
+  Near, Middle: TPointD;
   Area: TRectD;
   CellX, CellY: Extended;
   Generation: Integer;
@@ -2143,6 +2143,10 @@ begin
                 Continue;
               if Aside(TraceArray[I][K].Point, TraceArray[I][K + 1].Point, TraceArray[J][L].Point, TraceArray[J][L + 1].Point) > Chord then
                 Continue;
+              Middle.X := (TraceArray[I][K].Point.X + TraceArray[I][K + 1].Point.X) / 2;
+              Middle.Y := (TraceArray[I][K].Point.Y + TraceArray[I][K + 1].Point.Y) / 2;
+              Span := NearestOnSegment(Middle, TraceArray[J][L].Point, TraceArray[J][L + 1].Point, Near);
+              if Span < Close[K] then Close[K] := Span;
               if not SegmentsCross(TraceArray[I][K].Point, TraceArray[I][K + 1].Point, TraceArray[J][L].Point,
                 TraceArray[J][L + 1].Point, Point) then
                 begin
@@ -2154,7 +2158,6 @@ begin
                     GapPoint[K] := Near;
                     GapMate[K] := L;
                   end;
-                  if Span < Close[K] then Close[K] := Span;
                   Continue;
                 end;
               if FHighPrecision then
@@ -2180,8 +2183,7 @@ begin
               SetLength(PendingAt, Length(Pending));
               PendingAt[High(PendingAt)] := K;
               Crossed[K] := True;
-              Close[K] := 0;
-            end;
+                          end;
         end;
         Runs;
         for N := Low(Pending) to High(Pending) do
@@ -3274,4 +3276,5 @@ procedure TGraphEngine.ResultReady(const Kind: TResultKind);
 begin
   if Assigned(FOnResultReady) then FOnResultReady(Self, Kind);
 end;
+
 end.

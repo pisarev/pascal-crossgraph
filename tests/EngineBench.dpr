@@ -60,7 +60,8 @@ begin
     Code := Parser.CompileScript(Script);
     try
       if not Assigned(Code) then Exit('compilation did not happen');
-      if Code.Ready then Exit('machine code')
+      if Code.Ready then
+        Exit('machine code')
       else
         Exit('the parser: ' + Code.Reason);
     finally

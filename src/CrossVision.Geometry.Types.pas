@@ -65,4 +65,5 @@ begin
   Result.Right := Right;
   Result.Bottom := Bottom;
 end;
+
 end.

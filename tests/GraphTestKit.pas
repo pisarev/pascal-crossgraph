@@ -26,8 +26,7 @@ uses
   {$IFDEF FPC}
   Windows, SysUtils, Classes, Forms, Controls, Graphics,
   {$ELSE}
-  Winapi.Windows, System.SysUtils, System.Classes, Vcl.Forms, Vcl.Controls,
-  Vcl.Graphics,
+  Winapi.Windows, System.SysUtils, System.Classes, Vcl.Forms, Vcl.Controls, Vcl.Graphics,
   {$ENDIF}
   CrossVision.Geometry.Types, CrossGraph.Types, CrossGraph.Engine, CrossGraph;
 
@@ -294,4 +293,5 @@ begin
     end;
   end;
 end;
+
 end.

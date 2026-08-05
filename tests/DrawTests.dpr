@@ -28,9 +28,7 @@ uses
   {$ENDIF}
   // The order matters: the component has its own Check for array bounds, and
   // the one that counts checks is the one wanted here.
-  CrossVision.Geometry.Types,
-  CrossGraph,
-  GraphTestKit;
+  CrossVision.Geometry.Types, CrossGraph, GraphTestKit;
 
 const
   CurveColor = clRed;

@@ -40,8 +40,7 @@ uses
   {$ELSE}
   System.SysUtils, System.Math, System.Classes, System.Types,
   {$ENDIF}
-  CrossVision.Geometry.Types, CrossGraph.Types, CrossGraph.Geometry,
-  CrossGraph.Engine;
+  CrossVision.Geometry.Types, CrossGraph.Types, CrossGraph.Geometry, CrossGraph.Engine;
 
 const
   Tolerance = 1E-9;
