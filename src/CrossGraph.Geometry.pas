@@ -29,7 +29,6 @@ const
   Angle180 = Pi;
   Angle360 = Pi * 2;
   Angle540 = Pi * 3;
-
   SlopeInfinity = 1E30;
   SlopeZero = 1E-30;
 
@@ -222,5 +221,4 @@ function Inside(const Point: TPointD; const Area: TRectD): Boolean;
 begin
   Result := Inside(Point.X, Point.Y, Area);
 end;
-
 end.

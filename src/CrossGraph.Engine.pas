@@ -28,7 +28,6 @@ uses
   CrossGraph.Types, CrossGraph.Geometry;
 
 type
-
   PCoordinateSystem = ^TCoordinateSystem;
   TCoordinateSystem = (csRectangular, csPolar);
 
@@ -177,6 +176,7 @@ type
     function GetFloat80: PExtended;
     function GetEngine: TGraphEngine;
     procedure SetParser(const Value: TParser);
+    procedure SetWorkTime(const Value: LongWord);
   protected
     procedure Done; override;
     procedure DeleteWorkData; virtual;
@@ -199,7 +199,7 @@ type
     procedure Clear; virtual;
     procedure Attach; virtual;
     procedure Detach; virtual;
-    property WorkTime: LongWord read FWorkTime write FWorkTime;
+    property WorkTime: LongWord read FWorkTime write SetWorkTime;
     property Engine: TGraphEngine read GetEngine;
     property Parser: TParser read FParser write SetParser;
     property GlobalValue: PValue read FGlobalValue write FGlobalValue;
@@ -599,6 +599,7 @@ const
   EngineResolution = 1E-16;
   DefaultThreadCount = 2;
   DefaultThreadWorkTime = 5000;
+  TurnsPerMillisecond = 500;
   DefaultQuality = 1;
   DefaultAutoquality = True;
   DefaultHighPrecision = False;
@@ -1106,8 +1107,13 @@ begin
   FRedirectList := TList.Create;
   FRedirectCategory := GetRedirectCategory;
   FLocalValue.ValueType := vtExtended;
-  FWorkTime := DefaultThreadWorkTime;
-  AbortTime := DefaultThreadWorkTime + 2000;
+  WorkTime := DefaultThreadWorkTime;
+end;
+
+procedure TGraphThread.SetWorkTime(const Value: LongWord);
+begin
+  FWorkTime := Value;
+  AbortTime := Value * 2;
 end;
 
 procedure TGraphThread.DeleteRedirect;
@@ -1567,6 +1573,8 @@ var
 
 begin
   inherited;
+  ParseBreak := StopFlag;
+  ParseLoopLeft := NativeInt(FWorkTime) * TurnsPerMillisecond;
   FromTime := GetTickCount;
   FillChar(FGap, SizeOf(TGap), 0);
   FMinStep := FStep;
@@ -2643,7 +2651,7 @@ begin
     for I := J to FThreadList.Count - 1 do
     begin
       FThreadList[I] := TParseThread.Create(Self);
-      FThreadList[I].AbortTime := FThreadWorkTime;
+      FThreadList[I].WorkTime := FThreadWorkTime;
       FThreadList[I].Parser := FParser;
     end;
   finally
@@ -2659,7 +2667,7 @@ var
 begin
   if FThreadWorkTime = Value then Exit;
   FThreadWorkTime := Value;
-  for I := 0 to FThreadList.Count - 1 do FThreadList[I].AbortTime := Value;
+  for I := 0 to FThreadList.Count - 1 do FThreadList[I].WorkTime := Value;
 end;
 
 function TGraphEngine.GetOverlapMaxDepth: Integer;
@@ -2740,12 +2748,14 @@ end;
 function TGraphEngine.ComputePolar(const Value: Extended; const Script: TScript): TPointD;
 begin
   FGlobalValue.Float80 := Value;
+  ParseLoopLeft := NativeInt(FThreadWorkTime) * TurnsPerMillisecond;
   Result := PointAtAngle(ZeroPoint, Value, GetExtended(FParser.ExecuteScript(Script)^));
 end;
 
 function TGraphEngine.ComputeRectangular(const Value: Extended; const Script: TScript): TPointD;
 begin
   FGlobalValue.Float80 := Value;
+  ParseLoopLeft := NativeInt(FThreadWorkTime) * TurnsPerMillisecond;
   Result := PointD(Value, GetExtended(FParser.ExecuteScript(Script)^));
 end;
 
@@ -3106,6 +3116,7 @@ begin
   CrossGraph.Types.Delete(FMaxArray);
   CrossGraph.Types.Delete(FMinArray);
   FErrorMessage := '';
+  ParseLoopLeft := NativeInt(FThreadWorkTime) * TurnsPerMillisecond;
   Prior := 0;
   for I := 0 to FFormula.Count - 1 do if FFormula.Correct[I] then
   begin
@@ -3263,5 +3274,4 @@ procedure TGraphEngine.ResultReady(const Kind: TResultKind);
 begin
   if Assigned(FOnResultReady) then FOnResultReady(Self, Kind);
 end;
-
 end.

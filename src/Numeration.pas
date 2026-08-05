@@ -233,5 +233,4 @@ procedure TNumeration.SetPositive(const Value: Char);
 begin
   FPositive := Value;
 end;
-
 end.

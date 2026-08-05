@@ -110,33 +110,27 @@ begin
     E.MaxY := MaxY;
     E.Offset := PointD(-CX, -CY);
     E.Prepare;
-
     // The edges of the visible area.
     CheckNear(E.Min.X, CX - MaxX, 'left edge');
     CheckNear(E.Max.X, CX + MaxX, 'right edge');
     CheckNear(E.Min.Y, CY - MaxY, 'bottom edge');
     CheckNear(E.Max.Y, CY + MaxY, 'top edge');
-
     // The middle of the range is the centre that was asked for.
     CheckNear((E.Min.X + E.Max.X) / 2, CX, 'middle of the range across');
     CheckNear((E.Min.Y + E.Max.Y) / 2, CY, 'middle of the range down');
-
     // The point of the plane under the middle of the canvas.
     MidX := E.XToPoint(E.Center.X);
     MidY := E.YToPoint(E.Center.Y);
     CheckNear(MidX, CX, 'point under the middle of the canvas, across');
     CheckNear(MidY, CY, 'point under the middle of the canvas, down');
-
     // The other way round: the centre of the view lands in the middle.
     CheckNear(E.XToCursor(CX), E.Center.X, 'the centre is drawn in the middle across');
     CheckNear(E.YToCursor(CY), E.Center.Y, 'the centre is drawn in the middle down');
-
     // The edges of the canvas give the edges of the range.
     CheckNear(E.XToPoint(0), CX - MaxX, 'left edge of the canvas');
     CheckNear(E.XToPoint(CanvasWide), CX + MaxX, 'right edge of the canvas');
     CheckNear(E.YToPoint(CanvasHigh), CY - MaxY, 'bottom edge of the canvas');
     CheckNear(E.YToPoint(0), CY + MaxY, 'top edge of the canvas');
-
     // There and back loses nothing.
     CheckNear(E.XToPoint(E.XToCursor(CX + MaxX / 3)), CX + MaxX / 3, 'there and back across');
     CheckNear(E.YToPoint(E.YToCursor(CY - MaxY / 7)), CY - MaxY / 7, 'there and back down');
@@ -159,18 +153,14 @@ begin
   try
     E.MaxX := 10;
     E.MaxY := 10;
-
     E.Offset := PointD(0, 0);
     E.Prepare;
     Was := E.Max.X;
-
     E.Offset := PointD(-5, 0);
     E.Prepare;
     Became := E.Max.X;
-
     Check(Became > Was, 'the centre grew and the right edge went right');
     CheckNear(Became - Was, 5, 'the edge moved as far as the centre did');
-
     E.Offset := PointD(-5, -3);
     E.Prepare;
     CheckNear(E.XToPoint(E.Center.X), 5, 'the middle shows a centre across of 5');
@@ -259,7 +249,6 @@ begin
         Emit('EXCEPTION: ' + E.ClassName + ': ' + E.Message);
       end;
     end;
-
     Emit('');
     Emit(Format('TOTAL: checks %d, failures %d', [Total, Failed]));
     try

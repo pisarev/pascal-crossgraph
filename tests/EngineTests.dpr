@@ -455,12 +455,10 @@ begin
       Sleep(PollStep);
       Done := Waiter.Peaked and not Engine.Busy;
     until Done or (GetTickCount - Start > WaitLimit);
-
     Found := nil;
     Collect(Engine.MaxArray);
     Collect(Engine.MinArray);
     Count := Length(Found);
-
     Stray := 0;
     for J := Low(Found) to High(Found) do
     begin
@@ -472,13 +470,11 @@ begin
       end;
       if Best > Grain then Inc(Stray);
     end;
-
     Twin := 0;
     for I := Low(Found) to High(Found) do
       for J := I + 1 to High(Found) do
         if Sqrt(Sqr(Found[I].X - Found[J].X) + Sqr(Found[I].Y - Found[J].Y)) <= Grain then
           Inc(Twin);
-
     Emit(Format('       %s: marks %d, off the expected places %d, repeats %d, %d ms', [Name, Count, Stray, Twin, GetTickCount - Start]));
     for J := Low(Found) to High(Found) do
       Emit(Format('         (%.6f, %.6f)', [Found[J].X, Found[J].Y]));
@@ -617,10 +613,53 @@ begin
   end;
 end;
 
+{
+  The wait before the last resort has to follow the work limit.
+
+  What that wait holds off is TerminateThread: it kills the worker in the middle
+  of the heap, and the failure surfaces later, somewhere unrelated. A worker
+  leaves on its own once it sees Stopped, and it needs very little slack - but
+  the slack has to EXIST, and it has to be in proportion to the limit.
+
+  The wait used to be set by an assignment of its own, and two places took it
+  away again: creating the workers, and the handler of the "calculation time"
+  setting. The wait then equalled the limit exactly, and a worker that had not
+  quite finished its last step by the deadline was killed. Now one place derives
+  both, and the check below looks at that from outside: however the limit is
+  set, the wait stays twice as long.
+}
+procedure AbortWaitFollowsWorkTime;
+var
+  T: TGraphThread;
+  Limits: array [0 .. 4] of LongWord;
+  I: Integer;
+begin
+  Emit('');
+  Emit('--- the abort wait follows the work limit ---');
+  Limits[0] := 1;
+  Limits[1] := 20;
+  Limits[2] := 5000;
+  Limits[3] := 60000;
+  Limits[4] := 0;
+  T := TGraphThread.Create(nil);
+  try
+    Check(T.AbortTime > T.WorkTime, 'by default the wait is longer than the limit');
+    for I := Low(Limits) to High(Limits) do
+    begin
+      T.WorkTime := Limits[I];
+      Check(T.AbortTime = T.WorkTime * 2, Format('limit %d: the wait is twice as long', [Limits[I]]));
+      Check((Limits[I] = 0) or (T.AbortTime > T.WorkTime), Format('limit %d: the wait is strictly longer', [Limits[I]]));
+    end;
+  finally
+    T.Free;
+  end;
+end;
+
 begin
   Report := TStringList.Create;
   try
     try
+      AbortWaitFollowsWorkTime;
       Emit('Headless engine: intersections');
       One('sin and cos', 'sin(X)', 'cos(X)', False, 5, 2, 100,
         [Root(Pi / 4, Sin(Pi / 4)), Root(Pi / 4 + Pi, Sin(Pi / 4 + Pi)), Root(Pi / 4 - Pi, Sin(Pi / 4 - Pi))]);
@@ -662,7 +701,6 @@ begin
       }
       One('polar circles, panel without high precision', 'sin(T)', 'cos(T) / 2', True, 10, 10, 16, [Root(0, 0), Root(0.4, 0.2)],
         1000, False, 1E-3);
-
       {
         Why the polar search cannot simply compare curves at a shared angle.
         The rose r = sin(2t) draws four petals, but HALF of them with a
@@ -717,7 +755,6 @@ begin
           )
         ]
       );
-
       {
         Tangency: the curves share a point but never cross each other. The
         segment-intersection search knows nothing about such a point - a
@@ -817,7 +854,6 @@ begin
         that the trouble was in accumulation, not in the search.
       }
       One('root at the view edge', 'X', '2', False, 2, 4, 100, [Root(2, 2)]);
-
       {
         The engine's polar angle is in RADIANS. Not a cosmetic detail: the
         panel used to send 360 from the page, meaning degrees, and put that
@@ -850,7 +886,6 @@ begin
       }
       Crowd('fast sine, spacing 14', 'sin(60 * X)', '0', False, 10, 14, 30);
       Crowd('same without thinning', 'sin(60 * X)', '0', False, 10, 0, 30);
-
       Emit('');
       Emit('Headless engine: coinciding curves');
       {
@@ -874,9 +909,7 @@ begin
       }
       Twice('cartesian: sin(X) twice', 'sin(X)', False, 10);
       Twice('polar: the rose twice', 'sin(2 * T)', True, 1.5);
-
       Turns;
-
       Emit('');
       Emit('Headless engine: sampling density');
       {
@@ -889,7 +922,6 @@ begin
       Density('circle, window 0.2', 'sin(T)', True, 0.2);
       Density('sine, window 10', 'sin(X)', False, 10);
       Density('fast sine, window 10', 'sin(60 * X)', False, 10);
-
       Emit('');
       Emit('Headless engine: extrema');
       {

@@ -781,5 +781,4 @@ begin
   else
     Result := pkNone;
 end;
-
 end.

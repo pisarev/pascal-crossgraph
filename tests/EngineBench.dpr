@@ -17,16 +17,8 @@ program EngineBench;
 {$APPTYPE CONSOLE}
 
 uses
-  Winapi.Windows,
-  System.SysUtils,
-  System.Math,
-  System.Classes,
-  ParseTypes,
-  Parser,
-  ParseJit.Parser,
-  CrossVision.Geometry.Types,
-  CrossGraph.Types,
-  CrossGraph.Engine;
+  Winapi.Windows, System.SysUtils, System.Math, System.Classes, ParseTypes, Parser,
+  ParseJit.Parser, CrossVision.Geometry.Types, CrossGraph.Types, CrossGraph.Engine;
 
 const
   CanvasSide = 4000;

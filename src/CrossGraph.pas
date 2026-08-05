@@ -287,7 +287,6 @@ type
       const Color: PColor = nil): Boolean; virtual;
     procedure DrawSign(const Mode: TRetrieveMode = rmUser); virtual;
     procedure Prepare; virtual;
-
     property Parser: TParser read GetParser write SetParser;
     property PolarRangeArray: CrossGraph.Engine.TRangeArray read GetPolarRangeArray;
     property Size: TSize read FSize write FSize;
@@ -2547,5 +2546,4 @@ begin
     Build;
   end;
 end;
-
 end.

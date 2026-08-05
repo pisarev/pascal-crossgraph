@@ -18,16 +18,8 @@ program GraphTests;
 {$APPTYPE CONSOLE}
 
 uses
-  Winapi.Windows,
-  System.SysUtils,
-  System.Math,
-  System.Classes,
-  Vcl.Forms,
-  Vcl.Graphics,
-  CrossVision.Geometry.Types,
-  CrossGraph.Types,
-  CrossGraph.Engine,
-  CrossGraph,
+  Winapi.Windows, System.SysUtils, System.Math, System.Classes, Vcl.Forms, Vcl.Graphics,
+  CrossVision.Geometry.Types, CrossGraph.Types, CrossGraph.Engine, CrossGraph,
   GraphTestKit in 'GraphTestKit.pas';
 
 const
@@ -268,7 +260,6 @@ var
   Points: TPointDArray;
 begin
   Section('Touching, and no intersection at all');
-
   GraphCase := MakeCase('touching at zero', 'X * X', '0 - X * X', 3, 3);
   GraphCase.HighPrecision := True;
   Host.Run(GraphCase, wkOverlap);
@@ -276,7 +267,6 @@ begin
   Note(Format('touching: points %d, error %.8f', [Length(Points), NearestDistance(Points, 0, 0)]));
   Check(Length(Points) > 0, 'touching at zero: the point was found');
   Check(NearestDistance(Points, 0, 0) <= Tolerance, 'touching at zero: the coordinates are right');
-
   GraphCase := MakeCase('no intersections', 'X * X + 1', 'X', 3, 4);
   GraphCase.HighPrecision := True;
   Host.Run(GraphCase, wkOverlap);
@@ -425,7 +415,6 @@ begin
   Data := Host.Graph.Formula.Data[0];
   Check(Assigned(Data), 'the formula data was obtained');
   if not Assigned(Data) then Exit;
-
   // A direct enumeration of the slice points - the reference for comparing with Shift.
   Count := 0;
   SetLength(Expected, 0);
@@ -442,7 +431,6 @@ begin
   end;
   Note(Format('pieces %d, points in the slice %d', [Data.EntireFace.ArrayIndex - Data.EntireBack.ArrayIndex + 1, Count]));
   Check(Count > 0, 'the slice is not empty');
-
   Ok := True;
   for I := 0 to Count - 1 do
     if not Shift(Host.Graph.EntireArray, Data.EntireBack, Data.EntireFace, I, Place) or
