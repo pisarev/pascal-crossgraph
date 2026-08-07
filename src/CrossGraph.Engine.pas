@@ -917,8 +917,6 @@ begin
   Result.Step := Step;
 end;
 
-{ TThreadList }
-
 function TThreadList.GetItem(Index: Integer): TParseThread;
 begin
   Result := TParseThread(inherited Items[Index]);
@@ -928,8 +926,6 @@ procedure TThreadList.SetItem(Index: Integer; const Value: TParseThread);
 begin
   inherited Items[Index] := TObject(Value);
 end;
-
-{ TFormulaList }
 
 function TFormulaList.Add(const S: string; AVisible, ACorrect, ATracing: Boolean): Integer;
 begin
@@ -1079,8 +1075,6 @@ begin
   Data[Index].Visible := Value;
 end;
 
-{ TGraphThread }
-
 procedure TGraphThread.Attach;
 begin
   if Assigned(FParser) then
@@ -1120,8 +1114,7 @@ procedure TGraphThread.DeleteRedirect;
 var
   I: Integer;
 begin
-  for I := FRedirectList.Count - 1 downto 0 do
-    FParser.DeleteRedirect(NativeInt(FRedirectList[I]));
+  for I := FRedirectList.Count - 1 downto 0 do FParser.DeleteRedirect(NativeInt(FRedirectList[I]));
   FRedirectList.Clear;
 end;
 
@@ -1232,8 +1225,7 @@ var
   I: Integer;
   Code: TJitScript;
 begin
-  if not FJitEnabled or not Assigned(Script) or not (FParser is TJitParser) then
-    Exit;
+  if not FJitEnabled or not Assigned(Script) or not (FParser is TJitParser) then Exit;
   try
     Code := TJitParser(FParser).CompileScript(Script);
   except
@@ -1316,8 +1308,6 @@ begin
   end;
 end;
 
-{ TParseThread }
-
 procedure TParseThread.Clear;
 begin
   inherited;
@@ -1363,10 +1353,8 @@ begin
         Count := Length(RangeArray);
         I := Count - 1;
         J := Low(RangeArray);
-        if Below(RangeArray[J].Min, Range.Min) then
-          RangeArray[J].Min := Range.Min;
-        if Above(RangeArray[I].Max, Range.Max) then
-          RangeArray[I].Max := Range.Max;
+        if Below(RangeArray[J].Min, Range.Min) then RangeArray[J].Min := Range.Min;
+        if Above(RangeArray[I].Max, Range.Max) then RangeArray[I].Max := Range.Max;
         for I := J + 1 to Count do
           if I > Count - 1 then
             Add(Result, MakeRange(RangeArray[J].Min, RangeArray[I - 1].Max))
@@ -1664,8 +1652,6 @@ begin
   end;
 end;
 
-{ TOverlapThread }
-
 procedure TOverlapThread.Clear;
 begin
   inherited;
@@ -1882,11 +1868,9 @@ var
           Continue;
         end;
         if Trace[M].Point.X < Result.Left then Result.Left := Trace[M].Point.X;
-        if Trace[M].Point.X > Result.Right then
-          Result.Right := Trace[M].Point.X;
+        if Trace[M].Point.X > Result.Right then Result.Right := Trace[M].Point.X;
         if Trace[M].Point.Y < Result.Top then Result.Top := Trace[M].Point.Y;
-        if Trace[M].Point.Y > Result.Bottom then
-          Result.Bottom := Trace[M].Point.Y;
+        if Trace[M].Point.Y > Result.Bottom then Result.Bottom := Trace[M].Point.Y;
       end;
     end;
 
@@ -1915,8 +1899,7 @@ var
       for X := FirstX to LastX do
         for Y := FirstY to LastY do Inc(Start[Y * GridSide + X + 1]);
     end;
-    for M := Low(Start) + 1 to High(Start) do
-      Start[M] := Start[M] + Start[M - 1];
+    for M := Low(Start) + 1 to High(Start) do Start[M] := Start[M] + Start[M - 1];
     SetLength(Item, Start[High(Start)]);
     for M := 0 to Length(Trace) - 2 do
     begin
@@ -2029,8 +2012,7 @@ var
   var
     CPoint, DPoint: TPointD;
   begin
-    if not (Calc(BMin, BFormula, CPoint) and Calc(BMax, BFormula, DPoint)) then
-      Exit(Infinity);
+    if not (Calc(BMin, BFormula, CPoint) and Calc(BMax, BFormula, DPoint)) then Exit(Infinity);
     Result := Narrow(AMin, AMax, AFormula, CPoint, DPoint, Value);
   end;
 
@@ -2124,8 +2106,7 @@ begin
         for K := 0 to Length(TraceArray[I]) - 2 do
         begin
           if Stopped or Overtime then Break;
-          if not (TraceArray[I][K].Good and TraceArray[I][K + 1].Good) then
-            Continue;
+          if not (TraceArray[I][K].Good and TraceArray[I][K + 1].Good) then Continue;
           Inc(Generation);
           Bounds(TraceArray[I], K, FirstX, LastX, FirstY, LastY);
           if FirstX > 0 then Dec(FirstX);
@@ -2139,8 +2120,7 @@ begin
               L := Item[N];
               if Mark[L] = Generation then Continue;
               Mark[L] := Generation;
-              if not (TraceArray[J][L].Good and TraceArray[J][L + 1].Good) then
-                Continue;
+              if not (TraceArray[J][L].Good and TraceArray[J][L + 1].Good) then Continue;
               if Aside(TraceArray[I][K].Point, TraceArray[I][K + 1].Point, TraceArray[J][L].Point, TraceArray[J][L + 1].Point) > Chord then
                 Continue;
               Middle.X := (TraceArray[I][K].Point.X + TraceArray[I][K + 1].Point.X) / 2;
@@ -2161,15 +2141,8 @@ begin
                   Continue;
                 end;
               if FHighPrecision then
-                Refine(
-                  I,
-                  J,
-                  TraceArray[I][K].Argument,
-                  TraceArray[I][K + 1].Argument,
-                  TraceArray[J][L].Argument,
-                  TraceArray[J][L + 1].Argument,
-                  Point
-                );
+                Refine(I, J, TraceArray[I][K].Argument, TraceArray[I][K + 1].Argument, TraceArray[J][L].Argument,
+                  TraceArray[J][L + 1].Argument, Point);
               if not Examine(Point) then Continue;
               Overlap := MakeOverlap(Point, MakeRange(TraceArray[I][K].Argument, TraceArray[I][K + 1].Argument),
                 I, J, FStep);
@@ -2183,15 +2156,14 @@ begin
               SetLength(PendingAt, Length(Pending));
               PendingAt[High(PendingAt)] := K;
               Crossed[K] := True;
-                          end;
+            end;
         end;
         Runs;
         for N := Low(Pending) to High(Pending) do
         begin
           if Same[PendingAt[N]] then Continue;
           Inc(FTotal);
-          if Length(FOverlapArray) < MaxOverlapQueue then
-            Add(FOverlapArray, Pending[N]);
+          if Length(FOverlapArray) < MaxOverlapQueue then Add(FOverlapArray, Pending[N]);
         end;
         for K := Low(Gap) + 1 to High(Gap) - 1 do
         begin
@@ -2201,8 +2173,7 @@ begin
           if IsInfinite(Gap[K - 1]) or IsInfinite(Gap[K + 1]) then Continue;
           Chord := CrossGraph.Geometry.DistanceOf(TraceArray[I][K].Point, TraceArray[I][K + 1].Point);
           if Gap[K] > Chord then Continue;
-          if (Gap[K] * (1 + MinimumEdge) >= Gap[K - 1]) or (Gap[K] > Gap[K + 1]) then
-            Continue;
+          if (Gap[K] * (1 + MinimumEdge) >= Gap[K - 1]) or (Gap[K] > Gap[K + 1]) then Continue;
           Point := GapPoint[K];
           L := GapMate[K];
           AEnd := K + 2;
@@ -2222,8 +2193,7 @@ begin
           Overlap.AAngle := TraceArray[I][K].Argument;
           Overlap.BAngle := TraceArray[J][L].Argument;
           Inc(FTotal);
-          if Length(FOverlapArray) < MaxOverlapQueue then
-            Add(FOverlapArray, Overlap);
+          if Length(FOverlapArray) < MaxOverlapQueue then Add(FOverlapArray, Overlap);
         end;
       end;
     TraceArray := nil;
@@ -2271,8 +2241,7 @@ begin
       begin
         if not Kept[Order[J]] then Continue;
         B := @FOverlapArray[Order[J]];
-        if (A.AFormula <> B.AFormula) or (A.BFormula <> B.BFormula) then
-          Continue;
+        if (A.AFormula <> B.AFormula) or (A.BFormula <> B.BFormula) then Continue;
         if CrossGraph.Geometry.DistanceOf(A.Point, B.Point) < Bound then
         begin
           Crowded := True;
@@ -2285,8 +2254,6 @@ begin
       if not Kept[I] then Delete(FOverlapArray, I);
   end;
 end;
-
-{ TExtremeThread }
 
 procedure TExtremeThread.Clear;
 begin
@@ -2405,8 +2372,7 @@ begin
               Add(FWorkData.PointArray, FWorkData.MaxArray[M], FVoidRadius);
               M := L;
             end;
-            if M >= 0 then
-              Add(FWorkData.PointArray, FWorkData.MaxArray[M], FVoidRadius);
+            if M >= 0 then Add(FWorkData.PointArray, FWorkData.MaxArray[M], FVoidRadius);
             if Stopped then Break;
             CrossGraph.Types.Add(FMaxArray, FWorkData.PointArray);
             FWorkData.PointArray := nil;
@@ -2436,8 +2402,7 @@ begin
               Add(FWorkData.PointArray, FWorkData.MinArray[M], FVoidRadius);
               M := L;
             end;
-            if M >= 0 then
-              Add(FWorkData.PointArray, FWorkData.MinArray[M], FVoidRadius);
+            if M >= 0 then Add(FWorkData.PointArray, FWorkData.MinArray[M], FVoidRadius);
             if Stopped then Break;
             CrossGraph.Types.Add(FMinArray, FWorkData.PointArray);
           finally
@@ -2589,14 +2554,12 @@ end;
 
 procedure TGraphEngine.StartOverlap;
 begin
-  if FOverlap and Assigned(FOverlapThread) and FOverlapThread.Prepared then
-    FOverlapThread.Start;
+  if FOverlap and Assigned(FOverlapThread) and FOverlapThread.Prepared then FOverlapThread.Start;
 end;
 
 procedure TGraphEngine.StartExtreme;
 begin
-  if FExtreme and Assigned(FExtremeThread) and FExtremeThread.Prepared then
-    FExtremeThread.Start;
+  if FExtreme and Assigned(FExtremeThread) and FExtremeThread.Prepared then FExtremeThread.Start;
 end;
 
 procedure TGraphEngine.Stop;
@@ -2748,17 +2711,29 @@ begin
 end;
 
 function TGraphEngine.ComputePolar(const Value: Extended; const Script: TScript): TPointD;
+var
+  Guard: TLoopGuard;
 begin
   FGlobalValue.Float80 := Value;
-  ParseLoopLeft := NativeInt(FThreadWorkTime) * TurnsPerMillisecond;
-  Result := PointAtAngle(ZeroPoint, Value, GetExtended(FParser.ExecuteScript(Script)^));
+  ArmLoopGuard(Guard, NativeInt(FThreadWorkTime) * TurnsPerMillisecond, ParseBreak);
+  try
+    Result := PointAtAngle(ZeroPoint, Value, GetExtended(FParser.ExecuteScript(Script)^));
+  finally
+    DisarmLoopGuard(Guard);
+  end;
 end;
 
 function TGraphEngine.ComputeRectangular(const Value: Extended; const Script: TScript): TPointD;
+var
+  Guard: TLoopGuard;
 begin
   FGlobalValue.Float80 := Value;
-  ParseLoopLeft := NativeInt(FThreadWorkTime) * TurnsPerMillisecond;
-  Result := PointD(Value, GetExtended(FParser.ExecuteScript(Script)^));
+  ArmLoopGuard(Guard, NativeInt(FThreadWorkTime) * TurnsPerMillisecond, ParseBreak);
+  try
+    Result := PointD(Value, GetExtended(FParser.ExecuteScript(Script)^));
+  finally
+    DisarmLoopGuard(Guard);
+  end;
 end;
 
 function TGraphEngine.GetDisplay: TDisplay;
@@ -2907,12 +2882,12 @@ begin
       if YA then
         Result.FromCenter[dtMax] := DistanceOf(ZeroPoint, FMax)
       else
-          Result.FromCenter[dtMax] := DistanceOf(ZeroPoint, PointD(FMax.X, FMin.Y))
+        Result.FromCenter[dtMax] := DistanceOf(ZeroPoint, PointD(FMax.X, FMin.Y))
     else
       if YA then
         Result.FromCenter[dtMax] := DistanceOf(ZeroPoint, PointD(FMin.X, FMax.Y))
       else
-          Result.FromCenter[dtMax] := DistanceOf(ZeroPoint, FMin);
+        Result.FromCenter[dtMax] := DistanceOf(ZeroPoint, FMin);
   end;
 end;
 
@@ -2973,10 +2948,8 @@ begin
   FXFactor := FCenter.X / FMaxX;
   FYFactor := FCenter.Y / FMaxY;
   Resolution := DistanceOf(CursorToPoint(PointD(0, 0)), CursorToPoint(PointD(1, 1)));
-  if FExtremeVaryRadius <= 0 then
-    FExtremeVaryRadius := ExtremeVaryFactor * Resolution;
-  if FExtremeVoidRadius <= 0 then
-    FExtremeVoidRadius := ExtremeVoidFactor * Resolution;
+  if FExtremeVaryRadius <= 0 then FExtremeVaryRadius := ExtremeVaryFactor * Resolution;
+  if FExtremeVoidRadius <= 0 then FExtremeVoidRadius := ExtremeVoidFactor * Resolution;
 end;
 
 procedure TGraphEngine.Capture;
@@ -3108,6 +3081,7 @@ var
   Script: TScript;
   Step: Extended;
   Data: PFormulaData;
+  Guard: TLoopGuard;
 begin
   Abort;
   FOverlapThread.Clear;
@@ -3118,7 +3092,8 @@ begin
   CrossGraph.Types.Delete(FMaxArray);
   CrossGraph.Types.Delete(FMinArray);
   FErrorMessage := '';
-  ParseLoopLeft := NativeInt(FThreadWorkTime) * TurnsPerMillisecond;
+  ArmLoopGuard(Guard, NativeInt(FThreadWorkTime) * TurnsPerMillisecond, ParseBreak);
+  try
   Prior := 0;
   for I := 0 to FFormula.Count - 1 do if FFormula.Correct[I] then
   begin
@@ -3153,10 +3128,8 @@ begin
             FExtremeThread.Step := Step;
           end
           else begin
-            if Above(FOverlapThread.Step, Step) then
-              FOverlapThread.Step := Step;
-            if Above(FExtremeThread.Step, Step) then
-              FExtremeThread.Step := Step;
+            if Above(FOverlapThread.Step, Step) then FOverlapThread.Step := Step;
+            if Above(FExtremeThread.Step, Step) then FExtremeThread.Step := Step;
           end;
         end
     else
@@ -3232,6 +3205,9 @@ begin
     FExtremeThread.Formula := FFormula;
     FExtremeThread.Prepared := True;
     if FExtreme then FExtremeThread.Start;
+  end;
+  finally
+    DisarmLoopGuard(Guard);
   end;
 end;
 

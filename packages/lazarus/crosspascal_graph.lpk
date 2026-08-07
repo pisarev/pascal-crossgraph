@@ -25,7 +25,7 @@
     </CompilerOptions>
     <Description Value="Plotting on top of MathParser: the computation core and the visual component"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="0" Release="6"/>
+    <Version Major="1" Minor="0" Release="7"/>
     <Files>
       <Item>
         <Filename Value="..\..\src\CrossGraph.Types.pas"/>

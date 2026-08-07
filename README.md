@@ -45,6 +45,16 @@ If the parser lives elsewhere, point at it with `PARSER_SRC` and `PARSER_JIT`.
 The plotting engine itself is found through `GRAPH_SRC`, and the Delphi folder
 through `BDS_BIN`.
 
+## What it needs
+
+Delphi 13, or Free Pascal **3.3.1 and newer**. The parser next door builds with
+3.2.2 as well; the plotting engine does not, and the reason is one line:
+`CrossVision.Geometry` sorts points with an anonymous comparer, and function
+references arrived in 3.3.1. On 3.2.2 the compiler stops with a syntax error in
+the middle of that file, which reads like a broken source rather than a missing
+feature - hence this paragraph, and hence `tests/build_linux.sh` saying so
+itself before it tries.
+
 ## Building
 
 ```
