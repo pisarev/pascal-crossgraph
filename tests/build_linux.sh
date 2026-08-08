@@ -29,9 +29,10 @@ cd "$HERE"
 # The engine builds with the stable compiler. It used to need 3.3.1 for two
 # reasons: CrossVision.Geometry sorted points with an anonymous comparer, and
 # function references arrived in 3.3.1; and CrossGraph.Engine counted compiled
-# scripts with AtomicIncrement, which 3.2.2 does not have. The sort now goes
-# through the index callbacks the rest of the project uses, the counters through
-# InterlockedIncrement, and the version gate that stood here is gone.
+# scripts with AtomicIncrement, which 3.2.2 does not have. The sort is now
+# written out by hand in that same unit, which has to make do with the RTL and
+# nothing else; the counters go through InterlockedIncrement, and the version
+# gate that stood here is gone.
 echo "Free Pascal $(fpc -iV 2>/dev/null)"
 
 TARGETS="${@:-EngineTests EngineStress}"
