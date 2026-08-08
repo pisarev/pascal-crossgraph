@@ -26,22 +26,13 @@ OUT=$HERE/out/fpc-linux
 mkdir -p "$OUT"
 cd "$HERE"
 
-# Function references arrived in Free Pascal 3.3.1, and the engine needs them:
-# CrossVision.Geometry sorts points with an anonymous comparer. On 3.2.2 the
-# build stops with a syntax error in the middle of that file - a refusal that
-# reads like a broken source rather than a missing feature. Say so instead.
-#
-# Exit code zero: an unsuitable compiler is not a failed build. But not silence
-# either - the line below is always printed.
-VER=$(fpc -iV 2>/dev/null)
-MAJOR=${VER%%.*}
-REST=${VER#*.}
-MINOR=${REST%%.*}
-if [ "${MAJOR:-0}" -lt 3 ] || { [ "${MAJOR:-0}" -eq 3 ] && [ "${MINOR:-0}" -lt 3 ]; }; then
-  echo "SKIPPED: the plotting engine needs Free Pascal 3.3.1 or newer (function"
-  echo "         references in CrossVision.Geometry), this is $VER"
-  exit 0
-fi
+# The engine builds with the stable compiler. It used to need 3.3.1 for two
+# reasons: CrossVision.Geometry sorted points with an anonymous comparer, and
+# function references arrived in 3.3.1; and CrossGraph.Engine counted compiled
+# scripts with AtomicIncrement, which 3.2.2 does not have. The sort now goes
+# through the index callbacks the rest of the project uses, the counters through
+# InterlockedIncrement, and the version gate that stood here is gone.
+echo "Free Pascal $(fpc -iV 2>/dev/null)"
 
 TARGETS="${@:-EngineTests EngineStress}"
 FAILED=0

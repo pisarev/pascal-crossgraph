@@ -27,6 +27,8 @@ uses
   CrossGraph.Geometry;
 
 type
+  EGraphBusy = class(Exception);
+
   PCoordinateSystem = ^TCoordinateSystem;
   TCoordinateSystem = (csRectangular, csPolar);
 
@@ -35,6 +37,11 @@ type
     Min, Max: Extended;
   end;
   TRangeArray = array of TRange;
+
+const
+  GraphBusyMessage = 'the workers are still evaluating, the parser cannot be replaced';
+  GraphReentryMessage = 'the parser cannot be replaced while a result handler is running';
+  GraphSelfMessage = 'the parser cannot be replaced from a thread of this engine';
 
 const
   WholeRange: TRange = (Min: 0; Max: Angle360);
@@ -97,10 +104,15 @@ type
 
   PFormulaData = ^TFormulaData;
   TFormulaData = record
+  private
+    function GetCorrect: Boolean; inline;
+    procedure SetCorrect(const Value: Boolean); inline;
+  public
     ScriptIndex: Integer;
     Visible, Corrent, Tracing: Boolean;
     EntireBack, EntireFace, CursorBack, CursorFace, MinBack, MinFace, MaxBack, MaxFace: TPlace;
     Color: TGraphColor;
+    property Correct: Boolean read GetCorrect write SetCorrect;
   end;
 
   TFormulaList = class(TFastList)
@@ -411,6 +423,7 @@ type
     FOverlapThread: TOverlapThread;
     FMarkSpacing: Integer;
     FOwnParser: Boolean;
+    FInCallback: Integer;
     FParser: TParser;
     FPolarMaxAngle: Extended;
     FQuality: Integer;
@@ -462,6 +475,7 @@ type
     procedure TakeOverlap; virtual;
     procedure TakeExtreme; virtual;
     function WaitFor(const AThread: TThread; const Time: LongWord): Boolean; virtual;
+    function SelfWorker: Boolean; virtual;
     function CursorToPoint(const Point: TPointD): TPointD; overload;
     function PointToCursor(const Point: TPointD): TPointD; overload;
     function XToCursor(const X: Extended): Extended;
@@ -1014,6 +1028,16 @@ begin
   for I := 0 to Count - 1 do if Active[I] then Inc(Result);
 end;
 
+function TFormulaData.GetCorrect: Boolean;
+begin
+  Result := Corrent;
+end;
+
+procedure TFormulaData.SetCorrect(const Value: Boolean);
+begin
+  Corrent := Value;
+end;
+
 function TFormulaList.GetCorrect(const Index: Integer): Boolean;
 begin
   Result := Data[Index].Corrent;
@@ -1135,6 +1159,8 @@ begin
   Abort;
   if Assigned(FParser) then
   begin
+    Clear;
+    DeleteRedirect;
     FParser.BeginUpdate;
     try
       FParser.DeleteVariable(FLocalValue);
@@ -1234,17 +1260,17 @@ begin
   if not Assigned(Code) then
   begin
     if JitReason = '' then JitReason := 'compilation did not happen';
-    AtomicIncrement(JitRejected);
+    InterlockedIncrement(JitRejected);
     Exit;
   end;
   if not Code.Ready then
   begin
     if JitReason = '' then JitReason := Code.Reason;
     Code.Free;
-    AtomicIncrement(JitRejected);
+    InterlockedIncrement(JitRejected);
     Exit;
   end;
-  AtomicIncrement(JitCompiled);
+  InterlockedIncrement(JitCompiled);
   I := Length(FJitArray);
   SetLength(FJitArray, I + 1);
   FJitArray[I].Script := Script;
@@ -2528,8 +2554,39 @@ end;
 procedure TGraphEngine.SetParser(const Value: TParser);
 var
   I: Integer;
+  Stopped: Boolean;
 begin
   if FParser = Value then Exit;
+  if SelfWorker then
+    raise EGraphBusy.Create(GraphSelfMessage);
+  if FInCallback > 0 then
+    raise EGraphBusy.Create(GraphReentryMessage);
+  Abort;
+  Stopped := True;
+  for I := 0 to FThreadList.Count - 1 do
+    if not WaitFor(FThreadList[I], FThreadList[I].AbortTime) then Stopped := False;
+  if not WaitFor(FOverlapThread, FOverlapThread.AbortTime) then Stopped := False;
+  if not WaitFor(FExtremeThread, FExtremeThread.AbortTime) then Stopped := False;
+  if not Stopped then
+    raise EGraphBusy.Create(GraphBusyMessage);
+  for I := 0 to FThreadList.Count - 1 do FThreadList[I].Parser := nil;
+  FOverlapThread.Parser := nil;
+  FExtremeThread.Parser := nil;
+  ParseUtils.Delete(FSA);
+  CrossGraph.Types.Delete(FEntireArray);
+  CrossGraph.Types.Delete(FMaxArray);
+  CrossGraph.Types.Delete(FMinArray);
+  FOverlapArray := nil;
+  FExchange.OverlapArray := nil;
+  FExchange.MaxArray := nil;
+  FExchange.MinArray := nil;
+  FErrorMessage := '';
+  for I := 0 to FFormula.Count - 1 do
+    if not FFormula.Correct[I] then
+    begin
+      FFormula.Correct[I] := True;
+      FFormula.Visible[I] := True;
+    end;
   Detach;
   if FOwnParser then
   begin
@@ -2574,7 +2631,27 @@ end;
 function TGraphEngine.WaitFor(const AThread: TThread; const Time: LongWord): Boolean;
 begin
   Result := not AThread.Active or AThread.WaitFor(Time);
-  if not Result then AThread.Abort;
+  if Result then Exit;
+  AThread.Abort;
+  Result := not AThread.Active;
+end;
+
+function TGraphEngine.SelfWorker: Boolean;
+
+  function Same(const AThread: TThread): Boolean;
+  begin
+    Result := Assigned(AThread) and AThread.Active and (AThread.ThreadId = GetCurrentThreadId);
+  end;
+
+var
+  I: Integer;
+begin
+  Result := True;
+  for I := 0 to FThreadList.Count - 1 do
+    if Same(FThreadList[I]) then Exit;
+  if Same(FOverlapThread) then Exit;
+  if Same(FExtremeThread) then Exit;
+  Result := False;
 end;
 
 function TGraphEngine.GetBusy: Boolean;
@@ -3250,7 +3327,13 @@ end;
 
 procedure TGraphEngine.ResultReady(const Kind: TResultKind);
 begin
-  if Assigned(FOnResultReady) then FOnResultReady(Self, Kind);
+  if not Assigned(FOnResultReady) then Exit;
+  InterlockedIncrement(FInCallback);
+  try
+    FOnResultReady(Self, Kind);
+  finally
+    InterlockedDecrement(FInCallback);
+  end;
 end;
 
 end.

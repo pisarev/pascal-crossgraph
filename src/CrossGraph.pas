@@ -15,8 +15,8 @@ interface
 
 uses
   {$IFDEF FPC}
-  Windows, Messages, SysUtils, Classes, extctrls, Contnrs, Controls, Graphics, BaseTypes,
-  ExactTimer, FastList, CrossGraph.Types, CrossGraph.Geometry, CrossGraph.Engine,
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, extctrls, Contnrs, Controls, Graphics,
+  BaseTypes, ExactTimer, FastList, CrossGraph.Types, CrossGraph.Geometry, CrossGraph.Engine,
   CrossVision.Geometry, CrossVision.Geometry.Types, TextConsts, Numeration, NumberUtils,
   Parser, ParseTypes, Thread, Types, ValueTypes;
   {$ELSE}
@@ -33,6 +33,16 @@ uses
   Parser, ParseTypes, Thread, Types, ValueTypes;
   {$ENDIF}
   {$ENDIF}
+
+{$IFDEF FPC}
+type
+  TMessage = TLMessage;
+  TWMSetCursor = TLMSetCursor;
+
+const
+  WM_SETCURSOR = LM_SETCURSOR;
+  WM_MOUSEMOVE = LM_MOUSEMOVE;
+{$ENDIF}
 
 type
   TColorType = (ctB, ctG, ctR, ctA);
@@ -739,7 +749,6 @@ begin
 end;
 
 {$IFNDEF DELPHI_2006}
-{ TBitmap }
 
 procedure TBitmap.SetSize(const AWidth, AHeight: Integer);
 begin
@@ -752,8 +761,6 @@ begin
   SetSize(Size.cx, Size.cy);
 end;
 {$ENDIF}
-
-{ TGraph }
 
 procedure TGraph.Abort;
 begin
@@ -872,8 +879,7 @@ begin
   FNumeration := TNumeration.Create;
   FOverlapNameNumeration := FNumeration.Add(UCaseIndexChar);
   SetLength(FColorArray, Length(DefaultColorArray));
-  for I := Low(FColorArray) to High(FColorArray) do
-    FColorArray[I] := DefaultColorArray[I];
+  for I := Low(FColorArray) to High(FColorArray) do FColorArray[I] := DefaultColorArray[I];
   FBuffer := TBitmap.Create;
   FBuffer.PixelFormat := DefaultFormat;
   FAccuracy := DefaultAccuracy;
@@ -1261,14 +1267,12 @@ end;
 procedure TGraph.DoTrace(const FormulaIndex: Integer; const Angle: array of Extended;
   const Point: array of TPointD);
 begin
-  if Assigned(FOnPolarTrace) then
-    FOnPolarTrace(Self, FormulaIndex, Angle, Point);
+  if Assigned(FOnPolarTrace) then FOnPolarTrace(Self, FormulaIndex, Angle, Point);
 end;
 
 procedure TGraph.DoTrace(const FormulaIndex: Integer; const Point: TPointD);
 begin
-  if Assigned(FOnRectangularTrace) then
-    FOnRectangularTrace(Self, FormulaIndex, Point);
+  if Assigned(FOnRectangularTrace) then FOnRectangularTrace(Self, FormulaIndex, Point);
 end;
 
 procedure TGraph.DoTraceDone;
@@ -1281,8 +1285,7 @@ var
   Point: TPoint;
   Timer: TZoomTimer absolute Sender;
 begin
-  if GetCursorPos(Point) and PtInRect(ClientRect, ScreenToClient(Point)) then
-    Zoom(Timer.ZoomType);
+  if GetCursorPos(Point) and PtInRect(ClientRect, ScreenToClient(Point)) then Zoom(Timer.ZoomType);
   Timer.ZoomType := ztNone;
 end;
 
@@ -1637,19 +1640,16 @@ begin
       Bitmap.PixelFormat := DefaultFormat;
       Bitmap.Canvas.Font.Assign(FSignFont);
       FillChar(AExtent, SizeOf(TSize), 0);
-      for I := 0 to FEngine.Formula.Count - 1 do
-        if FEngine.Formula.Active[I] then
+      for I := 0 to FEngine.Formula.Count - 1 do if FEngine.Formula.Active[I] then
+      begin
+        Data := FEngine.Formula.Data[I];
+        if Assigned(Data) and Check(FEngine.SA, Data.ScriptIndex) then
         begin
-          Data := FEngine.Formula.Data[I];
-          if Assigned(Data) and Check(FEngine.SA, Data.ScriptIndex) then
-          begin
-            BExtent := Bitmap.Canvas.TextExtent(Parser.ScriptToString(FEngine.SA[Data.ScriptIndex], Mode));
-            if AExtent.cx < BExtent.cx + XMargin then
-              AExtent.cx := BExtent.cx + XMargin;
-            if AExtent.cy < BExtent.cy + YMargin then
-              AExtent.cy := BExtent.cy + YMargin;
-          end;
+          BExtent := Bitmap.Canvas.TextExtent(Parser.ScriptToString(FEngine.SA[Data.ScriptIndex], Mode));
+          if AExtent.cx < BExtent.cx + XMargin then AExtent.cx := BExtent.cx + XMargin;
+          if AExtent.cy < BExtent.cy + YMargin then AExtent.cy := BExtent.cy + YMargin;
         end;
+      end;
       I := FEngine.Formula.ActiveCount * AExtent.cy;
       case FSignLayout of
         ltBottomLeft: APoint := Point(FSignMargin, ClientRect.Bottom - FSignMargin - I);
@@ -1670,21 +1670,20 @@ begin
       else
         Bitmap.Height := I;
       J := 0;
-      for I := 0 to FEngine.Formula.Count - 1 do
-        if FEngine.Formula.Active[I] then
+      for I := 0 to FEngine.Formula.Count - 1 do if FEngine.Formula.Active[I] then
+      begin
+        Data := FEngine.Formula.Data[I];
+        if Assigned(Data) and Check(FEngine.SA, Data.ScriptIndex) then
         begin
-          Data := FEngine.Formula.Data[I];
-          if Assigned(Data) and Check(FEngine.SA, Data.ScriptIndex) then
-          begin
-            ARect := Rect(0, J, AExtent.cx, J + AExtent.cy);
-            Bitmap.Canvas.Brush.Color := Data.Color;
-            Bitmap.Canvas.FillRect(ARect);
-            BExtent := Bitmap.Canvas.TextExtent(FEngine.Formula[I]);
-            Bitmap.Canvas.TextRect(ARect, XMargin div 2, ARect.Top + ((ARect.Bottom - ARect.Top) - BExtent.cy) div 2,
-              Parser.ScriptToString(FEngine.SA[Data.ScriptIndex], Mode));
-            Inc(J, AExtent.cy);
-          end;
+          ARect := Rect(0, J, AExtent.cx, J + AExtent.cy);
+          Bitmap.Canvas.Brush.Color := Data.Color;
+          Bitmap.Canvas.FillRect(ARect);
+          BExtent := Bitmap.Canvas.TextExtent(FEngine.Formula[I]);
+          Bitmap.Canvas.TextRect(ARect, XMargin div 2, ARect.Top + ((ARect.Bottom - ARect.Top) - BExtent.cy) div 2,
+            Parser.ScriptToString(FEngine.SA[Data.ScriptIndex], Mode));
+          Inc(J, AExtent.cy);
         end;
+      end;
       DrawBitmap(Bitmap, APoint, FSignBlendValue);
     finally
       Bitmap.Free;
@@ -2055,8 +2054,7 @@ begin
         end;
         DoTraceDone;
         Canvas.Draw(0, 0, FBuffer);
-        if Assigned(FTraceArray) then
-          DrawPointArray(Canvas, FTraceArray, FTracePen);
+        if Assigned(FTraceArray) then DrawPointArray(Canvas, FTraceArray, FTracePen);
       end;
     end;
 end;
@@ -2108,10 +2106,14 @@ begin
   if (Message.HitTest = HTCLIENT) and (Message.CursorWnd = Handle) and (Screen.Cursor = crDefault) and
     Inactive then
     begin
+      {$IFDEF FPC}
+      LCLIntf.SetCursor(Screen.Cursors[crArrow]);
+      {$ELSE}
       {$IFDEF DELPHI_XE7}
       Winapi.Windows.SetCursor(Screen.Cursors[crArrow]);
       {$ELSE}
       Windows.SetCursor(Screen.Cursors[crArrow]);
+      {$ENDIF}
       {$ENDIF}
       Message.Result := 1;
     end
@@ -2122,8 +2124,7 @@ end;
 procedure TGraph.Notification(Component: TComponent; Operation: TOperation);
 begin
   inherited;
-  if Available and (Operation = opRemove) and (Component = FEngine.Parser) then
-    SetParser(nil);
+  if Available and (Operation = opRemove) and (Component = FEngine.Parser) then SetParser(nil);
 end;
 
 procedure TGraph.Paint;
@@ -2246,11 +2247,8 @@ begin
       FBuffer.Canvas.Polygon([PointI(APoint), PointI(BPoint), PointI(CPoint)]);
       FBuffer.Canvas.Brush.Style := bsClear;
       FBuffer.Canvas.Font.Assign(FAxisFont);
-      FBuffer.Canvas.TextOut(
-        Round(XToCursor(FEngine.Max.X)) - FBuffer.Canvas.TextWidth(XText),
-        Round(YToCursor(0)) - TextMargin - FBuffer.Canvas.TextHeight(XText),
-        XText
-      );
+      FBuffer.Canvas.TextOut(Round(XToCursor(FEngine.Max.X)) - FBuffer.Canvas.TextWidth(XText),
+        Round(YToCursor(0)) - TextMargin - FBuffer.Canvas.TextHeight(XText), XText);
       S := FormatFloat(FloatFormat(FXFormat), FEngine.Max.X);
       FBuffer.Canvas.TextOut(FSize.cx - FBuffer.Canvas.TextWidth(S), Round(FEngine.Center.Y) + TextMargin, S);
       S := FormatFloat(FloatFormat(FXFormat), FEngine.Min.X);
@@ -2323,10 +2321,8 @@ begin
   if FAutoVary or FAutoVoid then
   begin
     Resolution := DistanceOf(CursorToPoint(PointD(0, 0)), CursorToPoint(PointD(1, 1)));
-    if FAutoVary then
-      FEngine.ExtremeVaryRadius := ExtremeVaryFactor * Resolution;
-    if FAutoVoid then
-      FEngine.ExtremeVoidRadius := ExtremeVoidFactor * Resolution;
+    if FAutoVary then FEngine.ExtremeVaryRadius := ExtremeVaryFactor * Resolution;
+    if FAutoVoid then FEngine.ExtremeVoidRadius := ExtremeVoidFactor * Resolution;
   end;
   FXFormat := FloatFormat(FEngine.MaxX, FXDigitCount);
   FYFormat := FloatFormat(FEngine.MaxY, FYDigitCount);
@@ -2392,8 +2388,7 @@ end;
 procedure TGraph.SetMinZoom(const Value: Extended);
 begin
   FMinZoom[FEngine.CS] := Value;
-  if Below(FMinZoom[FEngine.CS], FEngine.Epsilon) then
-    FEngine.Epsilon := FMinZoom[FEngine.CS];
+  if Below(FMinZoom[FEngine.CS], FEngine.Epsilon) then FEngine.Epsilon := FMinZoom[FEngine.CS];
 end;
 
 procedure TGraph.SetOffset(const Value: TPointD);

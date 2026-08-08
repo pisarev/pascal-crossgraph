@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <Package Version="5">
-    <PathDelim Value="\"/>
+    <PathDelim Value="/"/>
     <Name Value="crosspascal_graph"/>
     <Author Value="Yuriy Pisarev"/>
     <CompilerOptions>
       <Version Value="11"/>
-      <PathDelim Value="\"/>
+      <PathDelim Value="/"/>
       <SearchPaths>
-        <IncludeFiles Value="..\..\..\pascal-mathparser\src"/>
-        <OtherUnitFiles Value="..\..\src"/>
-        <UnitOutputDir Value="lib\$(TargetCPU)-$(TargetOS)"/>
+        <IncludeFiles Value="../../../pascal-mathparser/src"/>
+        <OtherUnitFiles Value="../../src"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -25,26 +25,42 @@
     </CompilerOptions>
     <Description Value="Plotting on top of MathParser: the computation core and the visual component"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="0" Release="8"/>
+    <Version Major="1" Minor="0" Release="9"/>
     <Files>
       <Item>
-        <Filename Value="..\..\src\CrossGraph.Types.pas"/>
+        <Filename Value="../../src/CrossGraph.Types.pas"/>
         <UnitName Value="CrossGraph.Types"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\CrossGraph.Geometry.pas"/>
+        <Filename Value="../../src/CrossGraph.Geometry.pas"/>
         <UnitName Value="CrossGraph.Geometry"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\CrossGraph.Engine.pas"/>
+        <Filename Value="../../src/CrossGraph.Engine.pas"/>
         <UnitName Value="CrossGraph.Engine"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\CrossGraph.pas"/>
+        <Filename Value="../../src/CrossGraph.pas"/>
         <UnitName Value="CrossGraph"/>
         <HasRegisterProc Value="True"/>
       </Item>
-    </Files>
+          <Item>
+        <Filename Value="../../src/CrossGraph.Surface.pas"/>
+        <UnitName Value="CrossGraph.Surface"/>
+      </Item>
+      <Item>
+        <Filename Value="../../src/CrossVision.Geometry.pas"/>
+        <UnitName Value="CrossVision.Geometry"/>
+      </Item>
+      <Item>
+        <Filename Value="../../src/CrossVision.Geometry.Types.pas"/>
+        <UnitName Value="CrossVision.Geometry.Types"/>
+      </Item>
+      <Item>
+        <Filename Value="../../src/Numeration.pas"/>
+        <UnitName Value="Numeration"/>
+      </Item>
+</Files>
     <RequiredPkgs>
       <Item>
         <PackageName Value="crosspascal_parserjit"/>

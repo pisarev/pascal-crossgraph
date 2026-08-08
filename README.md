@@ -6,9 +6,12 @@ in as text, curves come out - with the discontinuities, the intersections and
 the extrema found for you.
 
 See it working: the
-[live demo](https://pisarev.github.io/mathparser-live/demo/) draws with this
-engine compiled to WebAssembly - the same intersections, extrema and report
-you get from the component.
+[live demo](https://pisarev.github.io/mathparser-live/demo/) draws the same
+formulas, and the values behind the curves come from the parser this component
+uses, compiled to WebAssembly. The drawing itself, the intersections and the
+extrema are written again in JavaScript there - this engine is native code and
+does not run in a browser. Treat the demo as a look at the formulas, not as
+proof that the two agree point for point.
 
 The engine is where the work happens: it samples the curve, refines
 intersections, finds extrema, and does all of it on worker threads. The
@@ -47,13 +50,17 @@ through `BDS_BIN`.
 
 ## What it needs
 
-Delphi 13, or Free Pascal **3.3.1 and newer**. The parser next door builds with
-3.2.2 as well; the plotting engine does not, and the reason is one line:
-`CrossVision.Geometry` sorts points with an anonymous comparer, and function
-references arrived in 3.3.1. On 3.2.2 the compiler stops with a syntax error in
-the middle of that file, which reads like a broken source rather than a missing
-feature - hence this paragraph, and hence `tests/build_linux.sh` saying so
-itself before it tries.
+Delphi 13, or Free Pascal **3.2.2 and newer** - the stable compiler a normal
+install brings. The parser next door has always built with 3.2.2; the plotting
+engine does now as well, checked by building and running the battery on it:
+138 checks and a 200-run stress pass on Free Pascal 3.2.2 with Lazarus 3.6.0.
+
+Two things used to stand in the way, and both are gone. `CrossVision.Geometry`
+sorted points with an anonymous comparer, and function references arrived only
+in 3.3.1; the sort now goes through the index callbacks the rest of the project
+already used. `CrossGraph.Engine` counted compiled scripts with
+`AtomicIncrement`, which 3.2.2 does not have; it uses `InterlockedIncrement`,
+as the parser does.
 
 ## Building
 

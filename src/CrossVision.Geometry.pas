@@ -10,8 +10,6 @@ unit CrossVision.Geometry;
 
 {$IFDEF FPC}
   {$MODE DELPHI}
-  {$MODESWITCH FUNCTIONREFERENCES}
-  {$MODESWITCH ANONYMOUSFUNCTIONS}
 {$ENDIF}
 
 interface
@@ -31,8 +29,11 @@ function PointInPolygon(const X, Y: Double; const Polygon: TPointDArray): Boolea
 function PointInPolygon(const Point: TPointD; const Polygon: TPointDArray): Boolean; overload;
 
 function PolygonSignedArea(const Polygon: TPointDArray): Double;
+
 function PolygonArea(const Polygon: TPointDArray): Double;
+
 function PolygonCentroid(const Polygon: TPointDArray): TPointD;
+
 function MeanPoint(const Points: TPointDArray): TPointD;
 
 function ConvexHull(const Points: TPointDArray; const Close: Boolean = False): TPointDArray;
@@ -40,22 +41,34 @@ function ConvexHull(const Points: TPointDArray; const Close: Boolean = False): T
 function Distance(const A, B: TPointD): Double;
 
 function LineSlope(const A, B: TPointD): Double;
+
 function LineYIntercept(const P: TPointD; const Slope: Double): Double;
 function DirectionAngle(const A, B: TPointD): Double;
+
 function IncludedAngle(const P1, Vertex, P2: TPointD): Double;
+
 function WrapAngle360(const Angle: Double): Double;
+
 function WrapAngle180(const Angle: Double): Double;
+
 function AngularDifference(const A, B: Double): Double;
+
 function CircularMean(const Angles: TArray<Double>): Double;
+
 function PointAtAngleDistance(const P: TPointD; const Angle, Dist: Double): TPointD;
 
 function PointSideOfLine(const P, A, B: TPointD): Integer;
+
 function PointOnSegment(const P, A, B: TPointD; const Epsilon: Double = 1e-9): Boolean;
+
 function SegmentsCollinear(const A, B, C, D: TPointD; const Epsilon: Double = 1e-9): Boolean;
+
 function CollinearOverlapLength(const A, B, C, D: TPointD): Double;
 
 function RotatePoints(const Points: TPointDArray; const Angle: Double; const Center: TPointD): TPointDArray;
+
 function BoundingBox(const Points: TPointDArray): TRectD;
+
 function NearestPoint(const FromPoint: TPointD; const Points: TPointDArray; out Index: Integer): Boolean;
 
 function NormalizeRect(const R: TRectD): TRectD;
@@ -64,34 +77,47 @@ function RectHeight(const R: TRectD): Double;
 function RectArea(const R: TRectD): Double;
 function RectIsEmpty(const R: TRectD): Boolean;
 function RectCenter(const R: TRectD): TPointD;
+
 function RectToPolygon(const R: TRectD): TPointDArray;
+
 function RectsIntersect(const A, B: TRectD): Boolean;
+
 function RectIntersection(const A, B: TRectD; out R: TRectD): Boolean;
+
 function RectUnion(const A, B: TRectD): TRectD; overload;
 function RectUnion(const Rects: TRectDArray): TRectD; overload;
+
 function RectIoU(const A, B: TRectD): Double;
+
 function RectGap(const A, B: TRectD): Double;
+
 function RectsApproxEqual(const A, B: TRectD; const Tolerance: Double): Boolean;
+
 function RectsCloserThan(const A, B: TRectD; const MaxGap: Double): Boolean;
+
 function MergeNearbyRects(const Rects: TRectDArray; const MaxGap: Double): TRectDArray;
 
 function RotateRectCorners(const R: TRectD; const Skew: Double;
   const SourceCenter, TargetCenter: TPointD): TPointDArray; overload;
+
 function RotateRectCorners(const R: TRectD; const Skew: Double): TPointDArray; overload;
+
 function RotatedRectBounds(const R: TRectD; const Skew: Double): TRectD; overload;
+
 function RotatedRectBounds(const R: TRectD; const Skew: Double;
   const SourceCenter, TargetCenter: TPointD): TRectD; overload;
 
 function ClassifyRectOverlap(const First, Second: TRectI): TRectOverlapKind;
+
 function ClassifyRectPosition(const First, Second: TRectI): TRectPositionKind;
 
 implementation
 
 uses
   {$IFDEF FPC}
-  Types, Math, Generics.Collections, Generics.Defaults;
+  Types, Math;
   {$ELSE}
-  System.Types, System.Math, System.Generics.Collections, System.Generics.Defaults;
+  System.Types, System.Math;
   {$ENDIF}
 
 const
@@ -248,6 +274,50 @@ begin
   Result := PointD(X / (Area * 6), Y / (Area * 6));
 end;
 
+function HullPointLess(const A, B: TPointD): Boolean; inline;
+begin
+  if A.X < B.X then Exit(True);
+  if A.X > B.X then Exit(False);
+  Result := A.Y < B.Y;
+end;
+
+procedure HullSort(var Points: TPointDArray; Min, Max: Integer);
+var
+  I, J: Integer;
+  Pivot, Swap: TPointD;
+begin
+  while Min < Max do
+  begin
+    I := Min;
+    J := Max;
+    Pivot := Points[Min + ((Max - Min) shr 1)];
+    repeat
+      while HullPointLess(Points[I], Pivot) do Inc(I);
+      while HullPointLess(Pivot, Points[J]) do Dec(J);
+      if I <= J then
+      begin
+        if I < J then
+        begin
+          Swap := Points[I];
+          Points[I] := Points[J];
+          Points[J] := Swap;
+        end;
+        Inc(I);
+        Dec(J);
+      end;
+    until I > J;
+    if J - Min < Max - I then
+    begin
+      if Min < J then HullSort(Points, Min, J);
+      Min := I;
+    end
+    else begin
+      if I < Max then HullSort(Points, I, Max);
+      Max := J;
+    end;
+  end;
+end;
+
 function ConvexHull(const Points: TPointDArray; const Close: Boolean): TPointDArray;
 var
   Sorted: TPointDArray;
@@ -262,34 +332,19 @@ begin
   N := Length(Points);
   if N < 4 then Exit(Copy(Points));
   Sorted := Copy(Points);
-  {$IFDEF FPC}TArrayHelper<TPointD>.Sort{$ELSE}TArray.Sort<TPointD>{$ENDIF}(Sorted, TComparer<TPointD>.Construct(
-    function(const A, B: TPointD): Integer
-    begin
-      if A.X < B.X then
-        Result := -1
-      else if A.X > B.X then
-        Result := 1
-      else if A.Y < B.Y then
-        Result := -1
-      else if A.Y > B.Y then
-        Result := 1
-      else
-        Result := 0;
-    end));
+  HullSort(Sorted, Low(Sorted), High(Sorted));
   SetLength(Result, N * 2);
   K := 0;
   for I := 0 to N - 1 do
   begin
-    while (K >= 2) and (Turn(Result[K - 2], Result[K - 1], Sorted[I]) <= 0) do
-      Dec(K);
+    while (K >= 2) and (Turn(Result[K - 2], Result[K - 1], Sorted[I]) <= 0) do Dec(K);
     Result[K] := Sorted[I];
     Inc(K);
   end;
   L := K + 1;
   for I := N - 2 downto 0 do
   begin
-    while (K >= L) and (Turn(Result[K - 2], Result[K - 1], Sorted[I]) <= 0) do
-      Dec(K);
+    while (K >= L) and (Turn(Result[K - 2], Result[K - 1], Sorted[I]) <= 0) do Dec(K);
     Result[K] := Sorted[I];
     Inc(K);
   end;
@@ -380,8 +435,7 @@ end;
 
 function PointOnSegment(const P, A, B: TPointD; const Epsilon: Double): Boolean;
 begin
-  if Abs((B.X - A.X) * (P.Y - A.Y) - (B.Y - A.Y) * (P.X - A.X)) > Epsilon then
-    Exit(False);
+  if Abs((B.X - A.X) * (P.Y - A.Y) - (B.Y - A.Y) * (P.X - A.X)) > Epsilon then Exit(False);
   Result := (P.X >= Min(A.X, B.X) - Epsilon) and (P.X <= Max(A.X, B.X) + Epsilon) and
     (P.Y >= Min(A.Y, B.Y) - Epsilon) and (P.Y <= Max(A.Y, B.Y) + Epsilon);
 end;
