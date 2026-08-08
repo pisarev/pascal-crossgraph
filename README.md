@@ -53,12 +53,12 @@ through `BDS_BIN`.
 Delphi 13, or Free Pascal **3.2.2 and newer** - the stable compiler a normal
 install brings. The parser next door has always built with 3.2.2; the plotting
 engine does now as well, checked by building and running the battery on it:
-138 checks and a 200-run stress pass on Free Pascal 3.2.2 with Lazarus 3.6.0.
+149 checks and a 200-run stress pass on Free Pascal 3.2.2 with Lazarus 3.6.0.
 
 Two things used to stand in the way, and both are gone. `CrossVision.Geometry`
 sorted points with an anonymous comparer, and function references arrived only
-in 3.3.1; the sort now goes through the index callbacks the rest of the project
-already used. `CrossGraph.Engine` counted compiled scripts with
+in 3.3.1; the sort is now written out in the same unit, which is what that unit
+needs - it is the one place that leans on nothing but the RTL. `CrossGraph.Engine` counted compiled scripts with
 `AtomicIncrement`, which 3.2.2 does not have; it uses `InterlockedIncrement`,
 as the parser does.
 

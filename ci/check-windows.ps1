@@ -107,4 +107,7 @@ if ($Bad.Count -gt 0) {
 } else {
     'MATRIX IS GREEN'
 }
-exit $Bad.Count
+# A skipped step is not a pass. This used to be exit $Bad.Count, so an
+# incomplete matrix handed the shell a zero: the text said INCOMPLETE while the
+# exit code said all is well. Skips now count alongside failures.
+exit ($Bad.Count + $Skipped.Count)
