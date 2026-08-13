@@ -13,7 +13,20 @@
 set -u
 [ -n "${FPC_ENV:-}" ] && [ -f "${FPC_ENV}" ] && source "${FPC_ENV}"
 
-HERE=$(cd "$(dirname "$0")" && pwd)
+# The script directory is resolved CHECKABLY: when dirname fails, cd goes
+# nowhere and pwd returns the current directory - the run then stays green
+# only because it happened to start in the right place.
+D=$(dirname "$0")
+DCODE=$?
+if [ "$DCODE" -ne 0 ] || [ -z "$D" ]; then
+  echo "SCRIPT DIRECTORY NOT RESOLVED: dirname returned $DCODE"
+  exit 1
+fi
+HERE=$(cd "$D" && pwd)
+if [ -z "$HERE" ] || [ ! -d "$HERE" ]; then
+  echo "SCRIPT DIRECTORY NOT RESOLVED: $D"
+  exit 1
+fi
 ROOT=$(dirname "$HERE")
 
 GRAPH=${GRAPH_SRC:-$(cd "$ROOT/src" && pwd)}
@@ -22,8 +35,13 @@ else SRC=$(cd "$ROOT/../pascal-mathparser/src" && pwd); fi
 if [ -n "${PARSER_JIT:-}" ]; then JIT=$PARSER_JIT
 else JIT=$(cd "$ROOT/../pascal-mathparser/jit" && pwd); fi
 
-OUT=$HERE/out/fpc-linux
-mkdir -p "$OUT"
+# Build output goes OUTSIDE the tree, one rule for every script.
+. "$HERE/runroot.sh" || { echo "REFUSED: run root rule not sourced"; exit 1; }
+runroot_init "$ROOT" || exit 1
+OUT=$RUNROOT/fpc-linux
+# The code of mkdir is asked for: "the directory was created" and "mkdir
+# was called" are different statements.
+mkdir -p "$OUT" || { echo "OUTPUT DIRECTORY NOT CREATED: $OUT"; exit 1; }
 cd "$HERE"
 
 # The engine builds with the stable compiler. It used to need 3.3.1 for two

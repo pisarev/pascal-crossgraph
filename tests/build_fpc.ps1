@@ -11,13 +11,24 @@ $LazUtils = Join-Path $LazDir 'components\lazutils\lib\x86_64-win64'
 $Here = $PSScriptRoot
 $Root = Split-Path $Here -Parent
 
+# Build output goes OUTSIDE the tree, one rule for every script - see
+# runroot.ps1. A test run must not change the tree it is checking.
+$RunRootRule = Join-Path $Here 'runroot.ps1'
+if (-not (Test-Path -LiteralPath $RunRootRule -PathType Leaf)) {
+    Write-Host "REFUSED: run root rule not found: $RunRootRule"
+    exit 1
+}
+. $RunRootRule
+$RunRoot = Initialize-RunRoot $Root
+if ($null -eq $RunRoot) { exit 1 }
+
 $Graph = if ($env:GRAPH_SRC) { $env:GRAPH_SRC } else { (Resolve-Path (Join-Path $Root 'src')).Path }
 $Src = if ($env:PARSER_SRC) { $env:PARSER_SRC }
        else { (Resolve-Path (Join-Path $Root '..\pascal-mathparser\src')).Path }
 $Jit = if ($env:PARSER_JIT) { $env:PARSER_JIT }
        else { (Resolve-Path (Join-Path $Root '..\pascal-mathparser\jit')).Path }
 
-$Out = Join-Path $Here 'out\fpc'
+$Out = Join-Path $RunRoot 'fpc'
 
 # A step that could not run must not report success. This used to exit 0 when
 # FPC was absent, so the matrix printed "ok" for a configuration nobody had
@@ -29,6 +40,18 @@ if (-not (Get-Command $Fpc -ErrorAction SilentlyContinue) -and -not (Test-Path $
     "FPC not found: $Fpc"
     'Set FPC_EXE to the compiler if it lives elsewhere.'
     exit 3
+}
+
+# The target compiler version. The OPM directory builds on 3.2.2, and the
+# rejected acceptance came from exactly there: the script picked the compiler
+# from PATH or from a hardcoded path, where trunk was installed. The build was
+# green on our side and red on theirs.
+$Want = if ($env:FPC_VERSION_WANT) { $env:FPC_VERSION_WANT } else { '3.2.2' }
+$Have = (& $Fpc -iV 2>$null | Select-Object -First 1).ToString().Trim()
+if ($Have -ne $Want) {
+    Write-Host "FPC version mismatch: $Fpc reports $Have, target is $Want"
+    Write-Host "Set FPC_EXE to the target compiler, or FPC_VERSION_WANT to override."
+    exit 1
 }
 New-Item -ItemType Directory -Force $Out | Out-Null
 

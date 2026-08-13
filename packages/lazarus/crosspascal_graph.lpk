@@ -10,7 +10,7 @@
       <SearchPaths>
         <IncludeFiles Value="../../../pascal-mathparser/src"/>
         <OtherUnitFiles Value="../../src"/>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+        <UnitOutputDirectory Value="graph_lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -25,7 +25,7 @@
     </CompilerOptions>
     <Description Value="Plotting on top of MathParser: the computation core and the visual component"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="0" Release="9"/>
+    <Version Major="1" Minor="1" Release="0"/>
     <Files>
       <Item>
         <Filename Value="../../src/CrossGraph.Types.pas"/>
