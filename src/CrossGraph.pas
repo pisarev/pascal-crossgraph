@@ -880,6 +880,7 @@ begin
   FOverlapNameNumeration := FNumeration.Add(UCaseIndexChar);
   SetLength(FColorArray, Length(DefaultColorArray));
   for I := Low(FColorArray) to High(FColorArray) do FColorArray[I] := DefaultColorArray[I];
+  ControlStyle := ControlStyle + [csOpaque];
   FBuffer := TBitmap.Create;
   FBuffer.PixelFormat := DefaultFormat;
   FAccuracy := DefaultAccuracy;
@@ -2053,8 +2054,7 @@ begin
           end;
         end;
         DoTraceDone;
-        Canvas.Draw(0, 0, FBuffer);
-        if Assigned(FTraceArray) then DrawPointArray(Canvas, FTraceArray, FTracePen);
+        inherited Invalidate;
       end;
     end;
 end;
@@ -2266,6 +2266,7 @@ begin
     DrawSign;
     if Trim(FEngine.ErrorMessage) <> '' then
       DrawText(FEngine.ErrorMessage, FTextFont, FTextBackground, FTextLayout, FTextMargin, FTextBlendValue);
+    if Assigned(FTraceArray) then DrawPointArray(FBuffer.Canvas, FTraceArray, FTracePen);
     Canvas.Draw(0, 0, FBuffer);
   end;
 end;
@@ -2450,8 +2451,7 @@ begin
             FEngine.TakeOverlap;
             if not FSilent then
             begin
-              DrawOverlap(FBuffer.Canvas);
-              Canvas.Draw(0, 0, FBuffer);
+              inherited Invalidate;
             end;
             DoOverlap;
           end;
@@ -2461,14 +2461,19 @@ begin
             FEngine.TakeExtreme;
             if not FSilent then
             begin
-              DrawMaximum(FBuffer.Canvas);
-              DrawMinimum(FBuffer.Canvas);
-              Canvas.Draw(0, 0, FBuffer);
+              inherited Invalidate;
             end;
             DoExtreme;
           end;
       end;
-    CM_INVALIDATE: if Available and not FSilent then Paint;
+    CM_INVALIDATE:
+      if Available and not FSilent then
+      begin
+        if HandleAllocated and IsWindowVisible(Handle) then
+          inherited
+        else
+          Paint;
+      end;
   else
     inherited;
   end;
