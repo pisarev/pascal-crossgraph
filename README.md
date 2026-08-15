@@ -50,10 +50,16 @@ through `BDS_BIN`.
 
 ## What it needs
 
-Delphi 13, or Free Pascal **3.2.2 and newer** - the stable compiler a normal
-install brings. The parser next door has always built with 3.2.2; the plotting
-engine does now as well, checked by building and running the battery on it:
-149 checks and a 200-run stress pass on Free Pascal 3.2.2 with Lazarus 3.6.0.
+Delphi **10.2 Tokyo and newer**, or Free Pascal **3.2.2 and newer** - the stable
+compiler a normal install brings. The parser next door has always built with
+3.2.2; the plotting engine does now as well, checked by building and running the
+battery on it: 149 checks and a 200-run stress pass on Free Pascal 3.2.2 with
+Lazarus 3.6.0.
+
+The Delphi side is measured rather than assumed: before a release all eight
+units of the engine are compiled one at a time on six installations - 10.2
+Tokyo, 10.3 Rio, 10.4 Sydney, 11 Alexandria, 12 Athens and 13. Anything older
+than 10.2 is untested and not claimed.
 
 Two things used to stand in the way, and both are gone. `CrossVision.Geometry`
 sorted points with an anonymous comparer, and function references arrived only

@@ -586,12 +586,16 @@ var
 function StartGdiPlus: Boolean;
 var
   Input: TGdiplusStartupInput;
+  Token: {$IF CompilerVersion >= 34}ULONG_PTR{$ELSE}ULONG{$IFEND};
 begin
   if not IsLibrary or (GdiPlusToken <> 0) then Exit(True);
   FillChar(Input, SizeOf(Input), 0);
   Input.GdiplusVersion := 1;
-  Result := GdiplusStartup(GdiPlusToken, @Input, nil) = Ok;
-  if not Result then GdiPlusToken := 0;
+  Result := GdiplusStartup(Token, @Input, nil) = Ok;
+  if Result then
+    GdiPlusToken := Token
+  else
+    GdiPlusToken := 0;
 end;
 {$ENDIF}
 
