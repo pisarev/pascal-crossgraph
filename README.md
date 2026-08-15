@@ -76,6 +76,18 @@ engine needs no display there either.
 tests/build_linux.sh
 ```
 
+## Putting the component on the palette
+
+`packages/lazarus/crosspascal_graph.lpk` is a design-time package as well as a
+runtime one. Open it in Lazarus and press `Install`: the IDE rebuilds itself and
+`TGraph` appears on the `Samples` page of the component palette, ready to be
+dropped on a form.
+
+The parser and the accelerator next door come along on their own: this package
+requires them, so installing this one is enough. They carry components of their
+own - eleven of them, listed in the parser's README - and those appear on the
+same page.
+
 ## The engine without a screen
 
 `-dNOFORMS` keeps Forms out of the base thread unit and `-dNOGRAPHICS` keeps

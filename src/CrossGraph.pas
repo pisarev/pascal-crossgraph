@@ -173,6 +173,7 @@ type
     FZoomInFactor: Extended;
     FZoomOutFactor: Extended;
     FZoomTimer: TZoomTimer;
+    FZoomType: TZoomType;
     function GetBusy: Boolean;
     function GetAutoquality: Boolean;
     procedure SetAutoquality(const Value: Boolean);
@@ -268,6 +269,11 @@ type
     procedure DoEngineResult(Sender: TObject; const Kind: TResultKind); virtual;
     procedure DoLeadTimer(Sender: TObject); virtual;
     procedure DoZoomTimer(Sender: TObject); virtual;
+    procedure DoTimerWork(const Code: Integer); virtual;
+    procedure TimerWork(const Code: Integer); virtual;
+    {$IFDEF GRAPHTHREADCHECK}
+    procedure ProbeDropped(const Code: Integer);
+    {$ENDIF}
     procedure DoTraceDone; virtual;
     procedure DoTrace(const FormulaIndex: Integer; const Point: TPointD); overload; virtual;
     procedure DoTrace(const FormulaIndex: Integer; const Angle: array of Extended;
@@ -493,6 +499,10 @@ const
   WM_INVALIDATE = WM_USER;
   OverlapCode = 1;
   ExtremeCode = 2;
+  WM_TIMERWORK = WM_USER + 1;
+  BuildCode = 1;
+  LeadCode = 2;
+  ZoomCode = 3;
   DefaultThreadCount = 2;
   DefaultColorArray: array[0..9] of TColor = (clMaroon, clNavy, clPurple, clRed, clOlive, clTeal, clGreen, clBlue, clFuchsia, clBlack);
   IncorrectColor = clBlack;
@@ -546,6 +556,13 @@ procedure Register;
 
 function Blend(const AValue, BValue, Factor: Byte): Byte;
 
+{$IFDEF GRAPHTHREADCHECK}
+var
+  GraphPosted: Integer = 0;
+  GraphHandled: Integer = 0;
+  GraphDropped: Integer = 0;
+{$ENDIF}
+
 implementation
 
 uses
@@ -582,6 +599,40 @@ procedure Register;
 begin
   RegisterComponents('Samples', [TGraph]);
 end;
+
+{$IFDEF GRAPHTHREADCHECK}
+{$IF DEFINED(FPC) AND DEFINED(MSWINDOWS)}
+function GetWindowThreadProcessId(Window: HWND; ProcessId: PDWORD): DWORD; stdcall;
+  external 'user32.dll' name 'GetWindowThreadProcessId';
+{$IFEND}
+
+procedure ThreadProbe(const Graph: TGraph; const Where: string);
+var
+  Owner, Current: TThreadID;
+  F: TextFile;
+  Name: string;
+begin
+  Current := GetCurrentThreadId;
+  Owner := MainThreadID;
+  {$IFDEF MSWINDOWS}
+  if Graph.HandleAllocated then Owner := GetWindowThreadProcessId(Graph.Handle, nil);
+  {$ENDIF}
+  if Current = Owner then Exit;
+  Name := ExtractFilePath(ParamStr(0)) + 'threadfail.txt';
+  AssignFile(F, Name);
+  if FileExists(Name) then
+    Append(F)
+  else
+    Rewrite(F);
+  try
+    WriteLn(F, Where, ': thread ', Current, ', window owner ', Owner);
+  finally
+    CloseFile(F);
+  end;
+  raise Exception.CreateFmt('%s: drawn from thread %d, window belongs to %d',
+    [Where, Int64(Current), Int64(Owner)]);
+end;
+{$ENDIF}
 
 function Check(const Target: TCurveIArray; const Place: TPlace): Boolean;
 begin
@@ -779,6 +830,9 @@ end;
 
 procedure TGraph.Build;
 begin
+  {$IFDEF GRAPHTHREADCHECK}
+  ThreadProbe(Self, 'Build');
+  {$ENDIF}
   Prepare;
   Parse;
   Paint;
@@ -887,6 +941,7 @@ begin
   FPrecisionFormat := DefaultPrecisionFormat;
   FAxisArrow := DefaultAxisArrow;
   FAxisFont := TFont.Create;
+  FAxisFont.Color := clWindowText;
   FAxisPen := TPen.Create;
   Cursor := crCross;
   FSign := DefaultSign;
@@ -902,6 +957,7 @@ begin
   FTextFont := TFont.Create;
   FTextFont.Color := clWhite;
   FFormulaFont := TFont.Create;
+  FFormulaFont.Color := clWindowText;
   FGraphPen := TPen.Create;
   FGraphPen.Color := clRed;
   FGridPen := TPen.Create;
@@ -1002,6 +1058,7 @@ end;
 procedure TGraph.DoEngineResult(Sender: TObject; const Kind: TResultKind);
 begin
   if csDestroying in ComponentState then Exit;
+  if not HandleAllocated then Exit;
   if Kind = rkOverlap then
     PostMessage(Handle, WM_INVALIDATE, OverlapCode, 0)
   else
@@ -1223,24 +1280,84 @@ begin
   Result := FEngine.Parser;
 end;
 
-procedure TGraph.DoBuildTimer(Sender: TObject);
+{$IFDEF GRAPHTHREADCHECK}
+procedure TGraph.ProbeDropped(const Code: Integer);
+var
+  F: TextFile;
+  Name: string;
 begin
-  Build;
+  Name := ExtractFilePath(ParamStr(0)) + 'nohandle.txt';
+  AssignFile(F, Name);
+  if FileExists(Name) then
+    Append(F)
+  else
+    Rewrite(F);
+  try
+    WriteLn(F, 'code ', Code, ' silent=', FSilent, ' destroying=', csDestroying in ComponentState, ' loading=',
+      csLoading in ComponentState, ' designing=', csDesigning in ComponentState);
+  finally
+    CloseFile(F);
+  end;
+end;
+{$ENDIF}
+
+procedure TGraph.DoTimerWork(const Code: Integer);
+begin
+  if HandleAllocated then
+  begin
+    {$IFDEF GRAPHTHREADCHECK}
+    Inc(GraphPosted);
+    {$ENDIF}
+    PostMessage(Handle, WM_TIMERWORK, Code, 0);
+  end
+  {$IFDEF GRAPHTHREADCHECK}
+  else begin
+    Inc(GraphDropped);
+    ProbeDropped(Code);
+  end
+  {$ENDIF};
 end;
 
-procedure TGraph.DoLeadTimer(Sender: TObject);
+procedure TGraph.TimerWork(const Code: Integer);
 var
   Point: TPoint;
 begin
-  Prepare;
-  GetCursorPos(Point);
-  Point := ScreenToClient(Point);
-  if PtInRect(ClientRect, Point) then
-  begin
-    FEngine.Offset := PointD(-XToPoint(Point.X), -YToPoint(Point.Y));
-    DoOffsetChange;
+  {$IFDEF GRAPHTHREADCHECK}
+  Inc(GraphHandled);
+  {$ENDIF}
+  if not Available then Exit;
+  case Code of
+    BuildCode: Build;
+    LeadCode:
+      begin
+        Prepare;
+        GetCursorPos(Point);
+        Point := ScreenToClient(Point);
+        if PtInRect(ClientRect, Point) then
+        begin
+          FEngine.Offset := PointD(-XToPoint(Point.X), -YToPoint(Point.Y));
+          DoOffsetChange;
+        end;
+        Build;
+      end;
+    ZoomCode:
+      begin
+        FZoomType := FZoomTimer.ZoomType;
+        FZoomTimer.ZoomType := ztNone;
+        if GetCursorPos(Point) and PtInRect(ClientRect, ScreenToClient(Point)) then
+          Zoom(FZoomType);
+      end;
   end;
-  Build;
+end;
+
+procedure TGraph.DoBuildTimer(Sender: TObject);
+begin
+  DoTimerWork(BuildCode);
+end;
+
+procedure TGraph.DoLeadTimer(Sender: TObject);
+begin
+  DoTimerWork(LeadCode);
 end;
 
 function TGraph.DoMouseWheelDown(Shift: TShiftState; MousePos: TPoint): Boolean;
@@ -1282,12 +1399,8 @@ begin
 end;
 
 procedure TGraph.DoZoomTimer(Sender: TObject);
-var
-  Point: TPoint;
-  Timer: TZoomTimer absolute Sender;
 begin
-  if GetCursorPos(Point) and PtInRect(ClientRect, ScreenToClient(Point)) then Zoom(Timer.ZoomType);
-  Timer.ZoomType := ztNone;
+  DoTimerWork(ZoomCode);
 end;
 
 function Blend(const AValue, BValue, Factor: Byte): Byte;
@@ -2157,13 +2270,16 @@ var
   Display: TDisplay;
   S: string;
 begin
+  {$IFDEF GRAPHTHREADCHECK}
+  ThreadProbe(Self, 'Paint');
+  {$ENDIF}
   if FSilent then Exit;
   DrawCount := 0;
   inherited;
   if Available then
   begin
     FBuffer.SetSize(FSize.cx, FSize.cy);
-    FBuffer.Canvas.Brush.Color := Color;
+    FBuffer.Canvas.Brush.Color := ColorToRGB(Brush.Color);
     FBuffer.Canvas.FillRect(Rect(0, 0, FBuffer.Width, FBuffer.Height));
     if FShowGrid then
     begin
@@ -2443,6 +2559,7 @@ end;
 procedure TGraph.WndProc(var Message: TMessage);
 begin
   case Message.Msg of
+    WM_TIMERWORK: TimerWork(Message.WParam);
     WM_INVALIDATE:
       case Message.WParam of
         OverlapCode:
