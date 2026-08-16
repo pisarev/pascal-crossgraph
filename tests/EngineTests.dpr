@@ -493,6 +493,78 @@ begin
   Check(Wide >= Spacing, Format('%s: at the far view marks no closer than %d pixels', [Name, Spacing]));
 end;
 
+procedure Sharp(const Name, Formula: string; const Expect: TRoot; const Near, Far: Extended;
+  const Grain: Double = Tolerance);
+var
+  Engine: TGraphEngine;
+  Close, Wide: TRoot;
+  Apart: Double;
+
+  function Nearest(const MaxX: Extended): TRoot;
+  var
+    Start: Cardinal;
+    Spots: TRootArray;
+    I: Integer;
+    Best, D: Double;
+
+    procedure Collect(const Source: TCurveDArray);
+    var
+      M, N: Integer;
+    begin
+      for M := Low(Source) to High(Source) do
+        for N := Low(Source[M]) to High(Source[M]) do
+        begin
+          SetLength(Spots, Length(Spots) + 1);
+          Spots[High(Spots)] := Root(Source[M][N].X, Source[M][N].Y);
+        end;
+    end;
+
+  begin
+    Result := Root(Infinity, Infinity);
+    Engine.MaxX := MaxX;
+    Engine.MaxY := MaxX;
+    Engine.Prepare;
+    Engine.Parse;
+    Start := GetTickCount;
+    while Engine.Busy and (GetTickCount - Start < WaitLimit) do Sleep(PollStep);
+    Spots := nil;
+    Collect(Engine.MaxArray);
+    Collect(Engine.MinArray);
+    Best := Infinity;
+    for I := Low(Spots) to High(Spots) do
+    begin
+      D := Sqrt(Sqr(Spots[I].X - Expect.X) + Sqr(Spots[I].Y - Expect.Y));
+      if D < Best then
+      begin
+        Best := D;
+        Result := Spots[I];
+      end;
+    end;
+    Emit(Format('       %s: view %.4g, marks %d, nearest (%.9f, %.9f), off by %.3g',
+      [Name, MaxX, Length(Spots), Result.X, Result.Y, Best]));
+  end;
+
+begin
+  Engine := TGraphEngine.Create(nil);
+  try
+    Engine.Size := TSize.Create(CanvasSide, CanvasSide);
+    Engine.CS := csRectangular;
+    Engine.Overlap := False;
+    Engine.Extreme := True;
+    Engine.HighPrecision := True;
+    Engine.Formula.Add(Formula, True, True, False);
+    Close := Nearest(Near);
+    Wide := Nearest(Far);
+  finally
+    Engine.Free;
+  end;
+  Check(Sqrt(Sqr(Close.X - Expect.X) + Sqr(Close.Y - Expect.Y)) <= Grain,
+    Format('%s: at the close view the extremum is where it is', [Name]));
+  Check(Sqrt(Sqr(Wide.X - Expect.X) + Sqr(Wide.Y - Expect.Y)) <= Grain, Format('%s: at the wide view the extremum is where it is', [Name]));
+  Apart := Sqrt(Sqr(Close.X - Wide.X) + Sqr(Close.Y - Wide.Y));
+  Check(Apart <= Grain, Format('%s: the mark stayed put when the view changed, apart by %.3g', [Name, Apart]));
+end;
+
 procedure Turns;
 var
   Engine: TGraphEngine;
@@ -557,19 +629,6 @@ begin
   end;
 end;
 
-{
-  Replacing the parser while the engine is alive.
-
-  Parsing hands the overlap worker its bytecode and raises Prepared regardless
-  of whether overlaps are switched on - the flag decides only whether the worker
-  starts. Work prepared while overlaps were off therefore sits and waits, and it
-  belongs to the parser that prepared it: the same handle stands for something
-  else in another parser's table. Replacing the parser has to drop it.
-
-  Readiness is visible from the outside through Busy, which counts prepared work
-  alongside running work. That is how these checks ask about it without the
-  workers being exposed.
-}
 procedure ParserSwapChecks;
 var
   Engine: TGraphEngine;
@@ -588,13 +647,10 @@ begin
     Engine.Prepare;
     Engine.Parse;
     Check(Length(Engine.SA) = 2, 'parsing produced the scripts of both formulas');
-    { Not tidiness: without this the next check would go green on any other kind
-      of business rather than on overlap readiness. }
     Check(not Engine.Busy, 'with overlaps off the engine is not busy');
     Engine.Overlap := True;
     Check(Engine.Busy, 'the old parser prepared the overlaps and they await the start');
     Engine.Overlap := False;
-    { As if the old parser had not understood this one. }
     Engine.Formula.Correct[1] := False;
     Engine.Formula.Visible[1] := False;
     Engine.Parser := Other;
@@ -605,13 +661,9 @@ begin
     Engine.StartOverlap;
     Check(not Engine.Busy, 'the start after the replacement raised no old bytecode');
     Engine.Overlap := False;
-    { And the new parser works: both formulas, including the one the old parser
-      rejected. }
     Engine.Parse;
     Check(Length(Engine.SA) = 2, 'the new parser parsed both formulas again');
   finally
-    { The engine no longer owns the parser - on destruction it takes its own
-      entries out of it, so the parser has to outlive the engine. }
     Engine.Free;
     Other.Free;
   end;
@@ -761,6 +813,9 @@ begin
       Emit('Headless engine: extrema');
       Peaks('circle in polar', 'sin(T)', True, 2, 2, [Root(0, 1), Root(0, 0)], 1E-2);
       Peaks('parabola', 'X * X', False, 3, 3, [Root(0, 0)]);
+      Sharp('shifted parabola', '(X - 0.3719) * (X - 0.3719)', Root(0.3719, 0), 3, 7);
+      Sharp('shifted sine', 'sin(X - 0.4)', Root(0.4 + Pi / 2, 1), 3, 7);
+      Sharp('shifted cusp', 'sqrt((X - 0.3719) * (X - 0.3719))', Root(0.3719, 0), 3, 7);
       Peaks('sine', 'sin(X)', False, 5, 2, [Root(-3 * Pi / 2, 1), Root(Pi / 2, 1), Root(-Pi / 2, -1), Root(3 * Pi / 2, -1)], 3.4E-2);
       Peaks('circle of constant radius', '2', True, 6, 6, []);
       Peaks('same circle with a minus', '0 - 2', True, 6, 6, []);

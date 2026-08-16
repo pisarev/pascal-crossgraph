@@ -360,6 +360,10 @@ type
     FMin: TPointD;
     FWorkData: TExtremeWorkData;
     FFormula: TFormulaList;
+    FSA: TScriptArray;
+    FCompute: TComputeMethod;
+    FExamine: TExamineMethod;
+    procedure SetSA(const Value: TScriptArray);
   protected
     procedure Work; override;
     procedure Done; override;
@@ -383,6 +387,9 @@ type
     property Epsilon: Extended read FEpsilon write FEpsilon;
     property EntireArray: TCurveDArray read FEntireArray write FEntireArray;
     property Formula: TFormulaList read FFormula write FFormula;
+    property SA: TScriptArray read FSA write SetSA;
+    property Compute: TComputeMethod read FCompute write FCompute;
+    property Examine: TExamineMethod read FExamine write FExamine;
   end;
 
   TResultKind = (rkOverlap, rkExtreme);
@@ -2281,10 +2288,51 @@ begin
   end;
 end;
 
+procedure TExtremeThread.SetSA(const Value: TScriptArray);
+var
+  I, J, K: Integer;
+  AFunction, BFunction: PFunction;
+  Function2: TFunction2;
+  Script: TScript;
+begin
+  if FSA <> Value then
+  begin
+    DeleteRedirect;
+    ParseUtils.Delete(FSA);
+    BFunction := GetLocalFunction;
+    Function2 := GetGlobalFunction;
+    for I := Low(Value) to High(Value) do
+    begin
+      Script := Copy(Value[I]);
+      try
+        FParser.SetRedirectCategory(Script, FRedirectCategory);
+        if Assigned(BFunction) and ParseScript(NativeInt(Script), LocalizeMethod, @BFunction.Method.Variable.Handle) then
+        begin
+          for J := Low(Function2) to High(Function2) do
+          begin
+            AFunction := Function2[J];
+            if Assigned(AFunction) then
+            begin
+              K := FParser.CreateRedirect;
+              if FParser.SetRedirect(K, FRedirectCategory, AFunction.Method.Variable.Handle, BFunction.Method.Variable.Handle) then
+                FRedirectList.Add(Pointer(K));
+            end;
+          end;
+          AddScript(FSA, Script);
+          CompileJit(FSA[High(FSA)]);
+        end;
+      finally
+        Script := nil;
+      end;
+    end;
+  end;
+end;
+
 procedure TExtremeThread.Clear;
 begin
   inherited;
   FPrepared := False;
+  ParseUtils.Delete(FSA);
   CrossGraph.Types.Delete(FMaxArray);
   CrossGraph.Types.Delete(FMinArray);
 end;
@@ -2299,6 +2347,7 @@ end;
 destructor TExtremeThread.Destroy;
 begin
   inherited;
+  ParseUtils.Delete(FSA);
   CrossGraph.Types.Delete(FMaxArray);
   CrossGraph.Types.Delete(FMinArray);
 end;
@@ -2321,11 +2370,62 @@ var
   I, J, K, L, M: Integer;
   Data: PFormulaData;
   Point: TPointD;
+  Sharp: TPointD;
   FromTime: LongWord;
 
   function Overtime: Boolean;
   begin
     Result := GetTickCount - FromTime > FWorkTime;
+  end;
+
+  function Refine(const AData: PFormulaData; const ABack, AFace: TPointD; const Maximum: Boolean;
+    var APoint: TPointD): Boolean;
+  const
+    Limit = 60;
+  var
+    Lo, Hi, A, B: Extended;
+    PA, PB: TPointD;
+    N: Integer;
+  begin
+    Result := False;
+    if not Assigned(FSA) or not Assigned(FCompute) or not Assigned(FExamine) then Exit;
+    if not Assigned(AData) or not Check(FSA, AData.ScriptIndex) then Exit;
+    if FCS <> csRectangular then Exit;
+    Lo := ABack.X;
+    Hi := AFace.X;
+    if not Above(Hi, Lo, FEpsilon) then Exit;
+    for N := 1 to Limit do
+    begin
+      if Stopped or Overtime then Exit;
+      A := Lo + (Hi - Lo) / 3;
+      B := Hi - (Hi - Lo) / 3;
+      Float80^ := A;
+      PA := FCompute(Float80^, FSA[AData.ScriptIndex]);
+      Float80^ := B;
+      PB := FCompute(Float80^, FSA[AData.ScriptIndex]);
+      if not FExamine(PA) or not FExamine(PB) then Exit;
+      if Below(PA.Y, PB.Y, FEpsilon) then
+      begin
+        if Maximum then
+          Lo := A
+        else
+          Hi := B;
+      end
+      else begin
+        if Maximum then
+          Hi := B
+        else
+          Lo := A;
+      end;
+    end;
+    A := (Lo + Hi) / 2;
+    Float80^ := A;
+    PA := FCompute(Float80^, FSA[AData.ScriptIndex]);
+    if not FExamine(PA) then Exit;
+    if Maximum and Below(PA.Y, APoint.Y, FEpsilon) then Exit;
+    if not Maximum and Above(PA.Y, APoint.Y, FEpsilon) then Exit;
+    APoint := PA;
+    Result := True;
   end;
 
 begin
@@ -2363,10 +2463,18 @@ begin
                 Grain := FEpsilon + Abs(Value) * TurnShare;
                 if AboveOrEqual(Value, Back, Grain) and AboveOrEqual(Value, Face, Grain) and (Above(Value, Back, Grain) or
                   Above(Value, Face, Grain)) then
-                    Add(FWorkData.MaxArray, Point, FStep);
+                  begin
+                    Sharp := Point;
+                    Refine(Data, FEntireArray[J, K - 1], FEntireArray[J, K + 1], True, Sharp);
+                    Add(FWorkData.MaxArray, Sharp, FStep);
+                  end;
                 if BelowOrEqual(Value, Back, Grain) and BelowOrEqual(Value, Face, Grain) and (Below(Value, Back, Grain) or
                   Below(Value, Face, Grain)) then
-                    Add(FWorkData.MinArray, Point, FStep);
+                  begin
+                    Sharp := Point;
+                    Refine(Data, FEntireArray[J, K - 1], FEntireArray[J, K + 1], False, Sharp);
+                    Add(FWorkData.MinArray, Sharp, FStep);
+                  end;
               end;
           end;
           if Stopped then Break;
@@ -3280,6 +3388,14 @@ begin
     FExtremeThread.Epsilon := FEpsilon;
     FExtremeThread.EntireArray := FEntireArray;
     FExtremeThread.Formula := FFormula;
+    FExtremeThread.GlobalValue := @FGlobalValue;
+    FExtremeThread.JitEnabled := FJitEnabled;
+    FExtremeThread.SA := FSA;
+    if FCS = csPolar then
+      FExtremeThread.Compute := FExtremeThread.ComputePolar
+    else
+      FExtremeThread.Compute := FExtremeThread.ComputeRectangular;
+    FExtremeThread.Examine := Examine;
     FExtremeThread.Prepared := True;
     if FExtreme then FExtremeThread.Start;
   end;
