@@ -1297,8 +1297,8 @@ begin
   else
     Rewrite(F);
   try
-    WriteLn(F, 'code ', Code, ' silent=', FSilent, ' destroying=', csDestroying in ComponentState, ' loading=',
-      csLoading in ComponentState, ' designing=', csDesigning in ComponentState);
+    WriteLn(F, 'code ', Code, ' silent=', FSilent, ' destroying=', csDestroying in ComponentState,
+      ' loading=', csLoading in ComponentState, ' designing=', csDesigning in ComponentState);
   finally
     CloseFile(F);
   end;
@@ -1494,11 +1494,15 @@ begin
               Target.Font.Size := FontSize;
               Target.Font.Color := C;
               Extent := Target.TextExtent(HintText);
-              Target.TextOut(Cursor.X - Extent.cx div 2, Cursor.Y + SmallMarkerMargin div 2 + HintMargin, HintText);
-              CrossGraph.Types.Add(PointArray, Point(Cursor.X - SmallMarkerMargin, Cursor.Y + SmallMarkerMargin));
+              Target.TextOut(Cursor.X - Extent.cx div 2,
+                Cursor.Y + SmallMarkerMargin div 2 + HintMargin, HintText);
+              CrossGraph.Types.Add(PointArray,
+                Point(Cursor.X - SmallMarkerMargin, Cursor.Y + SmallMarkerMargin));
               CrossGraph.Types.Add(PointArray, Point(Cursor.X, Cursor.Y - SmallMarkerMargin));
-              CrossGraph.Types.Add(PointArray, Point(Cursor.X + SmallMarkerMargin, Cursor.Y + SmallMarkerMargin));
-              CrossGraph.Types.Add(PointArray, Point(Cursor.X - SmallMarkerMargin, Cursor.Y + SmallMarkerMargin));
+              CrossGraph.Types.Add(PointArray,
+                Point(Cursor.X + SmallMarkerMargin, Cursor.Y + SmallMarkerMargin));
+              CrossGraph.Types.Add(PointArray,
+                Point(Cursor.X - SmallMarkerMargin, Cursor.Y + SmallMarkerMargin));
               DrawPointArray(Target, PointArray, FMarkerPen, False, nil, nil, @C);
             finally
               PointArray := nil;
@@ -1541,10 +1545,13 @@ begin
               Target.Font.Size := FontSize;
               Target.Font.Color := C;
               Extent := Target.TextExtent(HintText);
-              Target.TextOut(Cursor.X - Extent.cx div 2, Cursor.Y - SmallMarkerMargin div 2 - HintMargin - Extent.cy, HintText);
+              Target.TextOut(Cursor.X - Extent.cx div 2,
+                Cursor.Y - SmallMarkerMargin div 2 - HintMargin - Extent.cy, HintText);
               CrossGraph.Types.Add(PointArray, Point(Cursor.X, Cursor.Y + SmallMarkerMargin));
-              CrossGraph.Types.Add(PointArray, Point(Cursor.X - SmallMarkerMargin, Cursor.Y - SmallMarkerMargin));
-              CrossGraph.Types.Add(PointArray, Point(Cursor.X + SmallMarkerMargin, Cursor.Y - SmallMarkerMargin));
+              CrossGraph.Types.Add(PointArray,
+                Point(Cursor.X - SmallMarkerMargin, Cursor.Y - SmallMarkerMargin));
+              CrossGraph.Types.Add(PointArray,
+                Point(Cursor.X + SmallMarkerMargin, Cursor.Y - SmallMarkerMargin));
               CrossGraph.Types.Add(PointArray, Point(Cursor.X, Cursor.Y + SmallMarkerMargin));
               DrawPointArray(Target, PointArray, FMarkerPen, False, nil, nil, @C);
             finally
@@ -1797,7 +1804,8 @@ begin
           Bitmap.Canvas.Brush.Color := Data.Color;
           Bitmap.Canvas.FillRect(ARect);
           BExtent := Bitmap.Canvas.TextExtent(FEngine.Formula[I]);
-          Bitmap.Canvas.TextRect(ARect, XMargin div 2, ARect.Top + ((ARect.Bottom - ARect.Top) - BExtent.cy) div 2,
+          Bitmap.Canvas.TextRect(ARect, XMargin div 2,
+            ARect.Top + ((ARect.Bottom - ARect.Top) - BExtent.cy) div 2,
             Parser.ScriptToString(FEngine.SA[Data.ScriptIndex], Mode));
           Inc(J, AExtent.cy);
         end;
@@ -1965,17 +1973,26 @@ begin
   if Result then
   begin
     Cursor := PointToCursor(Point);
-    CrossGraph.Types.Add(PointArray, PointI(PointD(Cursor.X - SmallMarkerMargin, Cursor.Y + SmallMarkerMargin)));
-    CrossGraph.Types.Add(PointArray, PointI(PointD(Cursor.X - SmallMarkerMargin, Cursor.Y - SmallMarkerMargin)));
-    CrossGraph.Types.Add(PointArray, PointI(PointD(Cursor.X + SmallMarkerMargin, Cursor.Y - SmallMarkerMargin)));
-    CrossGraph.Types.Add(PointArray, PointI(PointD(Cursor.X + SmallMarkerMargin, Cursor.Y + SmallMarkerMargin)));
-    CrossGraph.Types.Add(PointArray, PointI(PointD(Cursor.X - SmallMarkerMargin, Cursor.Y + SmallMarkerMargin)));
+    CrossGraph.Types.Add(PointArray,
+      PointI(PointD(Cursor.X - SmallMarkerMargin, Cursor.Y + SmallMarkerMargin)));
+    CrossGraph.Types.Add(PointArray,
+      PointI(PointD(Cursor.X - SmallMarkerMargin, Cursor.Y - SmallMarkerMargin)));
+    CrossGraph.Types.Add(PointArray,
+      PointI(PointD(Cursor.X + SmallMarkerMargin, Cursor.Y - SmallMarkerMargin)));
+    CrossGraph.Types.Add(PointArray,
+      PointI(PointD(Cursor.X + SmallMarkerMargin, Cursor.Y + SmallMarkerMargin)));
+    CrossGraph.Types.Add(PointArray,
+      PointI(PointD(Cursor.X - SmallMarkerMargin, Cursor.Y + SmallMarkerMargin)));
     New(PointArray);
-    CrossGraph.Types.Add(PointArray, PointI(PointD(Cursor.X - SmallMarkerMargin, Cursor.Y + SmallMarkerMargin)));
-    CrossGraph.Types.Add(PointArray, PointI(PointD(Cursor.X + SmallMarkerMargin, Cursor.Y - SmallMarkerMargin)));
+    CrossGraph.Types.Add(PointArray,
+      PointI(PointD(Cursor.X - SmallMarkerMargin, Cursor.Y + SmallMarkerMargin)));
+    CrossGraph.Types.Add(PointArray,
+      PointI(PointD(Cursor.X + SmallMarkerMargin, Cursor.Y - SmallMarkerMargin)));
     CrossGraph.Types.New(PointArray);
-    CrossGraph.Types.Add(PointArray, PointI(PointD(Cursor.X + SmallMarkerMargin, Cursor.Y + SmallMarkerMargin)));
-    CrossGraph.Types.Add(PointArray, PointI(PointD(Cursor.X - SmallMarkerMargin, Cursor.Y - SmallMarkerMargin)));
+    CrossGraph.Types.Add(PointArray,
+      PointI(PointD(Cursor.X + SmallMarkerMargin, Cursor.Y + SmallMarkerMargin)));
+    CrossGraph.Types.Add(PointArray,
+      PointI(PointD(Cursor.X - SmallMarkerMargin, Cursor.Y - SmallMarkerMargin)));
     CrossGraph.Types.New(PointArray);
   end;
 end;
@@ -2042,7 +2059,8 @@ begin
       if ssRight in Shift then
         FEngine.Offset := PointD(FEngine.Offset.X + XToPoint(X), FEngine.Offset.Y + YToPoint(Y))
       else
-        FEngine.Offset := PointD(FEngine.Offset.X - FPivotPoint.X + XToPoint(X), FEngine.Offset.Y - FPivotPoint.Y + YToPoint(Y));
+        FEngine.Offset := PointD(FEngine.Offset.X - FPivotPoint.X + XToPoint(X),
+          FEngine.Offset.Y - FPivotPoint.Y + YToPoint(Y));
       DoOffsetChange;
       Build;
     end
@@ -2066,8 +2084,10 @@ begin
                     if Examine(APoint) then
                     begin
                       Remote[rtFace].Alive := True;
-                      CrossGraph.Types.Add(FTraceArray, PointI(PointToCursor(PointD(FEngine.Min.X, APoint.Y))));
-                      CrossGraph.Types.Add(FTraceArray, PointI(PointToCursor(PointD(FEngine.Max.X, APoint.Y))));
+                      CrossGraph.Types.Add(FTraceArray,
+                        PointI(PointToCursor(PointD(FEngine.Min.X, APoint.Y))));
+                      CrossGraph.Types.Add(FTraceArray,
+                        PointI(PointToCursor(PointD(FEngine.Max.X, APoint.Y))));
                       CrossGraph.Types.New(FTraceArray);
                       DoTrace(I, APoint);
                     end;
@@ -2089,7 +2109,8 @@ begin
                 Data := FEngine.Formula.Data[I];
                 if Assigned(Data) and Check(FEngine.SA, Data.ScriptIndex) then
                 begin
-                  FCursorValue.Float80 := VertexAngle(PointD(FEngine.MaxX, 0), ZeroPoint, CursorToPoint(PointD(X, Y)));
+                  FCursorValue.Float80 := VertexAngle(PointD(FEngine.MaxX, 0), ZeroPoint,
+                    CursorToPoint(PointD(X, Y)));
                   if Above(Y, YToCursor(0), FEngine.Epsilon) then
                     FCursorValue.Float80 := Angle360 - FCursorValue.Float80;
                   PointArray := nil;
@@ -2106,26 +2127,33 @@ begin
                         Display := GetDisplay;
                         case Display.QuarterKind of
                           qkA:
-                            BPoint := PointAtAngle(APoint, CounterClockwise(qtA, LineAngle(APoint, ZeroPoint)),
+                            BPoint := PointAtAngle(APoint,
+                              CounterClockwise(qtA, LineAngle(APoint, ZeroPoint)),
                               -DistanceOf(APoint, FEngine.Min));
                           qkB:
-                            BPoint := PointAtAngle(APoint, CounterClockwise(qtB, LineAngle(APoint, ZeroPoint)),
+                            BPoint := PointAtAngle(APoint,
+                              CounterClockwise(qtB, LineAngle(APoint, ZeroPoint)),
                               -DistanceOf(APoint, PointD(FEngine.Max.X, FEngine.Min.Y)));
                           qkC:
-                            BPoint := PointAtAngle(APoint, CounterClockwise(qtC, LineAngle(APoint, ZeroPoint)),
+                            BPoint := PointAtAngle(APoint,
+                              CounterClockwise(qtC, LineAngle(APoint, ZeroPoint)),
                               -DistanceOf(APoint, FEngine.Max));
                           qkD:
-                            BPoint := PointAtAngle(APoint, CounterClockwise(qtD, LineAngle(APoint, ZeroPoint)),
+                            BPoint := PointAtAngle(APoint,
+                              CounterClockwise(qtD, LineAngle(APoint, ZeroPoint)),
                               -DistanceOf(APoint, PointD(FEngine.Min.X, FEngine.Max.Y)));
                           qkAB:
-                            BPoint := LinesCross(APoint, ZeroPoint, FEngine.Min, PointD(FEngine.Max.X, FEngine.Min.Y));
+                            BPoint := LinesCross(APoint, ZeroPoint, FEngine.Min,
+                              PointD(FEngine.Max.X, FEngine.Min.Y));
                           qkBC:
-                            BPoint := LinesCross(APoint, ZeroPoint, FEngine.Max, PointD(FEngine.Max.X, FEngine.Min.Y));
+                            BPoint := LinesCross(APoint, ZeroPoint, FEngine.Max,
+                              PointD(FEngine.Max.X, FEngine.Min.Y));
                           qkCD:
-                            BPoint := LinesCross(APoint, ZeroPoint, PointD(FEngine.Min.X, FEngine.Max.Y),
-                              FEngine.Max);
+                            BPoint := LinesCross(APoint, ZeroPoint,
+                              PointD(FEngine.Min.X, FEngine.Max.Y), FEngine.Max);
                           qkDA:
-                            BPoint := LinesCross(APoint, ZeroPoint, FEngine.Min, PointD(FEngine.Min.X, FEngine.Max.Y));
+                            BPoint := LinesCross(APoint, ZeroPoint, FEngine.Min,
+                              PointD(FEngine.Min.X, FEngine.Max.Y));
                           qkABCD: BPoint := ZeroPoint;
                         end;
                         if Equal(APoint.Y, 0, FEngine.Epsilon) then
@@ -2135,8 +2163,10 @@ begin
                         AShift := DistanceOf(APoint, BPoint);
                         if Above(AShift, Remote[J].Shift, FEngine.Epsilon) then
                           Remote[J] := MakeRemote(AShift, APoint, True);
-                        CrossGraph.Types.Add(FTraceArray, PointI(PointToCursor(PointD(FEngine.Min.X, APoint.Y))));
-                        CrossGraph.Types.Add(FTraceArray, PointI(PointToCursor(PointD(FEngine.Max.X, APoint.Y))));
+                        CrossGraph.Types.Add(FTraceArray,
+                          PointI(PointToCursor(PointD(FEngine.Min.X, APoint.Y))));
+                        CrossGraph.Types.Add(FTraceArray,
+                          PointI(PointToCursor(PointD(FEngine.Max.X, APoint.Y))));
                         CrossGraph.Types.New(FTraceArray);
                         CrossGraph.Types.Add(PointArray, APoint);
                         Add(AngleArray, FCursorValue.Float80);
@@ -2178,7 +2208,8 @@ end;
 
 procedure TGraph.MakeColor(const Formula: Integer);
 begin
-  FEngine.Formula.Data[Formula].Color := TColor(RGB(Random(MaxByte + 1), Random(MaxByte + 1), Random(MaxByte + 1)));
+  FEngine.Formula.Data[Formula].Color := TColor(RGB(Random(MaxByte + 1), Random(MaxByte + 1),
+    Random(MaxByte + 1)));
 end;
 
 procedure TGraph.MakeZoom(const ZoomType: TZoomType);
@@ -2256,7 +2287,8 @@ procedure TGraph.Paint;
       BPoint := PointD(FEngine.Max.X, 0);
     end
     else begin
-      APoint := LinesCross(FEngine.Min, PointD(FEngine.Max.X, FEngine.Min.Y), ZeroPoint, PointAtAngle(ZeroPoint, Angle, 1));
+      APoint := LinesCross(FEngine.Min, PointD(FEngine.Max.X, FEngine.Min.Y), ZeroPoint,
+        PointAtAngle(ZeroPoint, Angle, 1));
       BPoint := LinesCross(PointD(FEngine.Min.X, FEngine.Max.Y), FEngine.Max, ZeroPoint, APoint);
     end;
     FBuffer.Canvas.MoveTo(Round(XToCursor(APoint.X)), Round((YToCursor(APoint.Y))));
@@ -2336,14 +2368,15 @@ begin
           DrawLine(Pi * 7 / 8);
           Display := GetDisplay;
           if Above(Display.FromCenter[dtMin], 0, FEngine.Epsilon) then
-            APoint := PointD(NextStep(Display.FromCenter[dtMin], FHSpacing, 1), NextStep(Display.FromCenter[dtMin], FVSpacing, 1))
+            APoint := PointD(NextStep(Display.FromCenter[dtMin], FHSpacing, 1),
+              NextStep(Display.FromCenter[dtMin], FVSpacing, 1))
           else
             APoint := PointD(FHSpacing, FVSpacing);
           FBuffer.Canvas.Brush.Style := bsClear;
           while BelowOrEqual(APoint.X, Display.FromCenter[dtMax], FEngine.Epsilon) and BelowOrEqual(APoint.Y, Display.FromCenter[dtMax], FEngine.Epsilon) do
           begin
-            FBuffer.Canvas.Ellipse(Round(XToCursor(-APoint.X)), Round(YToCursor(-APoint.Y)), Round(XToCursor(APoint.X)),
-              Round(YToCursor(APoint.Y)));
+            FBuffer.Canvas.Ellipse(Round(XToCursor(-APoint.X)), Round(YToCursor(-APoint.Y)),
+              Round(XToCursor(APoint.X)), Round(YToCursor(APoint.Y)));
             APoint.X := APoint.X + FHSpacing;
             APoint.Y := APoint.Y + FVSpacing;
           end;
@@ -2373,11 +2406,13 @@ begin
       FBuffer.Canvas.TextOut(FSize.cx - FBuffer.Canvas.TextWidth(S), Round(FEngine.Center.Y) + TextMargin, S);
       S := FormatFloat(FloatFormat(FXFormat), FEngine.Min.X);
       FBuffer.Canvas.TextOut(0, Round(FEngine.Center.Y) + TextMargin, S);
-      FBuffer.Canvas.TextOut(Round(XToCursor(0)) - TextMargin - FBuffer.Canvas.TextWidth(YText), Round(YToCursor(FEngine.Max.Y)), YText);
+      FBuffer.Canvas.TextOut(Round(XToCursor(0)) - TextMargin - FBuffer.Canvas.TextWidth(YText),
+        Round(YToCursor(FEngine.Max.Y)), YText);
       S := FormatFloat(FloatFormat(FYFormat), FEngine.Max.Y);
       FBuffer.Canvas.TextOut(Round(FEngine.Center.X) + TextMargin, 0, S);
       S := FormatFloat(FloatFormat(FYFormat), FEngine.Min.Y);
-      FBuffer.Canvas.TextOut(Round(FEngine.Center.X) + TextMargin, FSize.cy - FBuffer.Canvas.TextHeight(S), S);
+      FBuffer.Canvas.TextOut(Round(FEngine.Center.X) + TextMargin,
+        FSize.cy - FBuffer.Canvas.TextHeight(S), S);
     end;
     DrawFormula(FBuffer.Canvas);
     DrawOverlap(FBuffer.Canvas);
@@ -2411,8 +2446,10 @@ begin
       Data.Color := FColorArray[J];
     end;
     Data.CursorBack := MakePlace(Data.EntireBack.ArrayIndex, 0);
-    if (Data.EntireFace.ArrayIndex >= 0) and (Data.EntireFace.ArrayIndex < Length(FCursorArray)) then
-      Data.CursorFace := MakePlace(Data.EntireFace.ArrayIndex, High(FCursorArray[Data.EntireFace.ArrayIndex]))
+    if (Data.EntireFace.ArrayIndex >= 0) and
+      (Data.EntireFace.ArrayIndex < Length(FCursorArray)) then
+        Data.CursorFace := MakePlace(Data.EntireFace.ArrayIndex,
+          High(FCursorArray[Data.EntireFace.ArrayIndex]))
     else
       Data.CursorFace := MakePlace(Data.EntireFace.ArrayIndex, -1);
   end;
@@ -2632,11 +2669,11 @@ begin
         else
           AFactor := Factor;
         if Above(FEngine.MaxX, 1 / FMaxZoom[FEngine.CS], FEngine.Epsilon) then
-          FEngine.MaxX := EnsureRange(FEngine.MaxX - FEngine.MaxX * AFactor, 1 / FMaxZoom[FEngine.CS],
-            1 / FMinZoom[FEngine.CS]);
+          FEngine.MaxX := EnsureRange(FEngine.MaxX - FEngine.MaxX * AFactor,
+            1 / FMaxZoom[FEngine.CS], 1 / FMinZoom[FEngine.CS]);
         if Above(FEngine.MaxY, 1 / FMaxZoom[FEngine.CS], FEngine.Epsilon) then
-          FEngine.MaxY := EnsureRange(FEngine.MaxY - FEngine.MaxY * AFactor, 1 / FMaxZoom[FEngine.CS],
-            1 / FMinZoom[FEngine.CS]);
+          FEngine.MaxY := EnsureRange(FEngine.MaxY - FEngine.MaxY * AFactor,
+            1 / FMaxZoom[FEngine.CS], 1 / FMinZoom[FEngine.CS]);
         FLeadTimer.SetTimer;
       end;
     ztOut:
@@ -2646,11 +2683,11 @@ begin
         else
           AFactor := Factor;
         if Below(FEngine.MaxX, 1 / FMinZoom[FEngine.CS], FEngine.Epsilon) then
-          FEngine.MaxX := EnsureRange(FEngine.MaxX + FEngine.MaxX * AFactor, 1 / FMaxZoom[FEngine.CS],
-            1 / FMinZoom[FEngine.CS]);
+          FEngine.MaxX := EnsureRange(FEngine.MaxX + FEngine.MaxX * AFactor,
+            1 / FMaxZoom[FEngine.CS], 1 / FMinZoom[FEngine.CS]);
         if Below(FEngine.MaxY, 1 / FMinZoom[FEngine.CS], FEngine.Epsilon) then
-          FEngine.MaxY := EnsureRange(FEngine.MaxY + FEngine.MaxY * AFactor, 1 / FMaxZoom[FEngine.CS],
-            1 / FMinZoom[FEngine.CS]);
+          FEngine.MaxY := EnsureRange(FEngine.MaxY + FEngine.MaxY * AFactor,
+            1 / FMaxZoom[FEngine.CS], 1 / FMinZoom[FEngine.CS]);
         FLeadTimer.SetTimer;
       end;
   else

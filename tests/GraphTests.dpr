@@ -102,7 +102,8 @@ procedure TestOverlapAccuracy;
     Host.Run(GraphCase, wkOverlap);
     Fine := MaxError(OverlapPoints(Host.Graph), Roots);
     FineCount := Length(Host.Graph.OverlapArray);
-    Note(Format('%s: ordinary %.8f (%d points), high precision %.8f (%d points)', [Name, Rough, RoughCount, Fine, FineCount]));
+    Note(Format('%s: ordinary %.8f (%d points), high precision %.8f (%d points)',
+      [Name, Rough, RoughCount, Fine, FineCount]));
     Check(FineCount >= Length(Roots), Name + ': every expected intersection was found');
     Check(Fine <= Tolerance, Name + ': high precision stays within tolerance');
   end;
@@ -134,7 +135,8 @@ begin
   One('a parabola and a line', 'X * X', 'X + 2', False, 4, 6, [Root(-1, 1), Root(2, 4)]);
   One('a line and its mirror', 'X', '0 - X', False, 4, 4, [Root(0, 0)]);
   One('a cubic and a line', 'X * X * X', 'X', False, 3, 3, [Root(-1, -1), Root(0, 0), Root(1, 1)]);
-  One('polar circles', '1', '2 * cos(T)', True, 3, 3, [Root(Cos(RootPi3), Sin(RootPi3)), Root(Cos(RootPi3), -Sin(RootPi3))]);
+  One('polar circles', '1', '2 * cos(T)', True, 3, 3,
+    [Root(Cos(RootPi3), Sin(RootPi3)), Root(Cos(RootPi3), -Sin(RootPi3))]);
 end;
 
 procedure TestOverlapConvergence;
@@ -158,7 +160,8 @@ procedure TestOverlapConvergence;
       GraphCase.MaxDepth := Depths[I];
       Host.Run(GraphCase, wkOverlap);
       Errors[I] := MaxError(OverlapPoints(Host.Graph), Roots);
-      Note(Format('%s: depth %3d, error %.10f, points %d', [Name, Depths[I], Errors[I], Length(Host.Graph.OverlapArray)]));
+      Note(Format('%s: depth %3d, error %.10f, points %d',
+        [Name, Depths[I], Errors[I], Length(Host.Graph.OverlapArray)]));
     end;
     Check(
       (Errors[1] <= Errors[0] + Max(1E-9, Errors[0] * 0.01)) and (Errors[2] <= Errors[1] + Max(1E-9, Errors[1] * 0.01)),
@@ -192,7 +195,8 @@ begin
   );
   One('a parabola and a line', 'X * X', 'X + 2', False, 4, 6, [Root(-1, 1), Root(2, 4)]);
   One('a cubic and a line', 'X * X * X', 'X', False, 3, 3, [Root(-1, -1), Root(0, 0), Root(1, 1)]);
-  One('polar circles', '1', '2 * cos(T)', True, 3, 3, [Root(Cos(RootPi3), Sin(RootPi3)), Root(Cos(RootPi3), -Sin(RootPi3))]);
+  One('polar circles', '1', '2 * cos(T)', True, 3, 3,
+    [Root(Cos(RootPi3), Sin(RootPi3)), Root(Cos(RootPi3), -Sin(RootPi3))]);
 end;
 
 procedure TestExtremes;
@@ -211,7 +215,8 @@ procedure TestExtremes;
     MinPoints := FlattenCurves(Host.Graph.MinArray);
     EMax := MaxError(MaxPoints, Maxima);
     EMin := MaxError(MinPoints, Minima);
-    Note(Format('%s: maxima %d (error %.6f), minima %d (error %.6f)', [Name, Length(MaxPoints), EMax, Length(MinPoints), EMin]));
+    Note(Format('%s: maxima %d (error %.6f), minima %d (error %.6f)',
+      [Name, Length(MaxPoints), EMax, Length(MinPoints), EMin]));
     Check(not Host.TimedOut, Name + ': the extrema were computed without a timeout');
     Check(EMax <= ExtremeTolerance, Name + ': the maxima match the analytic ones');
     Check(EMin <= ExtremeTolerance, Name + ': the minima match the analytic ones');
@@ -323,7 +328,8 @@ begin
   GraphCase.HighPrecision := True;
   Host.Run(GraphCase, wkOverlap);
   Points := OverlapPoints(Host.Graph);
-  Note(Format('a root on the edge: points %d, distance to (2, 2) is %.8f', [Length(Points), NearestDistance(Points, 2, 2)]));
+  Note(Format('a root on the edge: points %d, distance to (2, 2) is %.8f',
+    [Length(Points), NearestDistance(Points, 2, 2)]));
   Check(NearestDistance(Points, 2, 2) <= Tolerance, 'the root on the edge of the view was found');
 end;
 
@@ -339,7 +345,8 @@ begin
   if not Assigned(Host.Graph.Buffer) then Exit;
   Check((Host.Graph.Buffer.Width > 0) and (Host.Graph.Buffer.Height > 0), 'the buffer has a size');
   Painted := DrawnPixels(Host.Graph.Buffer);
-  Note(Format('pixels differing from the background: %d of %d', [Painted, Host.Graph.Buffer.Width * Host.Graph.Buffer.Height]));
+  Note(Format('pixels differing from the background: %d of %d',
+    [Painted, Host.Graph.Buffer.Width * Host.Graph.Buffer.Height]));
   Check(Painted > 0, 'something is drawn on the buffer');
   // If the background is misidentified the whole buffer differs, and that is not drawing.
   Check(Painted < Host.Graph.Buffer.Width * Host.Graph.Buffer.Height,
@@ -367,7 +374,8 @@ procedure TestCurveStructure;
     Host.Run(GraphCase, wkNone);
     Check(
       Length(Host.Graph.CursorArray) = Length(Host.Graph.EntireArray),
-      Name + Format(': the same number of curves (computed %d, pixel %d)', [Length(Host.Graph.EntireArray), Length(Host.Graph.CursorArray)])
+      Name + Format(': the same number of curves (computed %d, pixel %d)',
+      [Length(Host.Graph.EntireArray), Length(Host.Graph.CursorArray)])
     );
     Data := Host.Graph.Formula.Data[0];
     if not Assigned(Data) then
@@ -429,7 +437,8 @@ begin
       Inc(Count);
     end;
   end;
-  Note(Format('pieces %d, points in the slice %d', [Data.EntireFace.ArrayIndex - Data.EntireBack.ArrayIndex + 1, Count]));
+  Note(Format('pieces %d, points in the slice %d',
+    [Data.EntireFace.ArrayIndex - Data.EntireBack.ArrayIndex + 1, Count]));
   Check(Count > 0, 'the slice is not empty');
   Ok := True;
   for I := 0 to Count - 1 do
@@ -442,7 +451,8 @@ begin
         Break;
       end;
   Check(Ok, 'Shift walks the slice in the same order as a direct enumeration');
-  Check(not Shift(Host.Graph.EntireArray, Data.EntireBack, Data.EntireFace, Count, Place), 'Shift past the end of the slice refuses');
+  Check(not Shift(Host.Graph.EntireArray, Data.EntireBack, Data.EntireFace, Count, Place),
+    'Shift past the end of the slice refuses');
   Check(Empty(MakePlace(1, 0), MakePlace(0, 5)), 'a reversed slice counts as empty');
   Check(not Empty(MakePlace(0, 0), MakePlace(1, 5)), 'a forward slice does not count as empty');
 end;

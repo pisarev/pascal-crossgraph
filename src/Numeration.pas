@@ -107,7 +107,8 @@ function TNumeration.Check(const Value: string): Boolean;
 var
   I: Integer;
 begin
-  Result := (Length(Value) > 1) and not Contains(Value, FNegative) and not Contains(Value, FPositive);
+  Result := (Length(Value) > 1) and not Contains(Value, FNegative) and
+    not Contains(Value, FPositive);
   if Result then
     for I := 1 to Length(Value) do
       if Duplicated(Value, I) then

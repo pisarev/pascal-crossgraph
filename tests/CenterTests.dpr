@@ -194,8 +194,10 @@ begin
       E.MaxY := 6;
       E.Offset := PointD(-2.5, 1.25);
       E.Prepare;
-      CheckNear((E.Min.X + E.Max.X) / 2, 2.5, Format('canvas %dx%d: centre across', [Sizes[I].cx, Sizes[I].cy]));
-      CheckNear((E.Min.Y + E.Max.Y) / 2, -1.25, Format('canvas %dx%d: centre down', [Sizes[I].cx, Sizes[I].cy]));
+      CheckNear((E.Min.X + E.Max.X) / 2, 2.5,
+        Format('canvas %dx%d: centre across', [Sizes[I].cx, Sizes[I].cy]));
+      CheckNear((E.Min.Y + E.Max.Y) / 2, -1.25,
+        Format('canvas %dx%d: centre down', [Sizes[I].cx, Sizes[I].cy]));
     finally
       E.Free;
     end;

@@ -1462,11 +1462,12 @@ begin
         begin
           J := FParser.CreateRedirect;
           repeat
-            if FParser.SetRedirect(J, FRedirectCategory, AFunction.Method.Variable.Handle, BFunction.Method.Variable.Handle) then
-            begin
-              FRedirectList.Add(Pointer(J));
-              Break;
-            end;
+            if FParser.SetRedirect(J, FRedirectCategory, AFunction.Method.Variable.Handle,
+              BFunction.Method.Variable.Handle) then
+              begin
+                FRedirectList.Add(Pointer(J));
+                Break;
+              end;
             FParser.DeleteRedirect(J);
           until True;
         end;
@@ -1618,7 +1619,8 @@ begin
           if Above(Move, 0) then
           begin
             Move := FStep / Move;
-            FWorkData.MapArray := Map(FRangeArray[I], Move * EnsureRange(1 + 1 / FMaxX, PolarMapMinSpace, PolarMapMaxSpace));
+            FWorkData.MapArray := Map(FRangeArray[I],
+              Move * EnsureRange(1 + 1 / FMaxX, PolarMapMinSpace, PolarMapMaxSpace));
           end
           else begin
             Move := FStep;
@@ -1754,8 +1756,9 @@ begin
             if Assigned(AFunction) then
             begin
               K := FParser.CreateRedirect;
-              if FParser.SetRedirect(K, FRedirectCategory, AFunction.Method.Variable.Handle, BFunction.Method.Variable.Handle) then
-                FRedirectList.Add(Pointer(K));
+              if FParser.SetRedirect(K, FRedirectCategory, AFunction.Method.Variable.Handle,
+                BFunction.Method.Variable.Handle) then
+                  FRedirectList.Add(Pointer(K));
             end;
           end;
           AddScript(FSA, Script);
@@ -1953,8 +1956,10 @@ var
   var
     AGap, BGap: Extended;
   begin
-    AGap := Most(Least(APoint.X, BPoint.X) - Most(CPoint.X, DPoint.X), Least(CPoint.X, DPoint.X) - Most(APoint.X, BPoint.X));
-    BGap := Most(Least(APoint.Y, BPoint.Y) - Most(CPoint.Y, DPoint.Y), Least(CPoint.Y, DPoint.Y) - Most(APoint.Y, BPoint.Y));
+    AGap := Most(Least(APoint.X, BPoint.X) - Most(CPoint.X, DPoint.X),
+      Least(CPoint.X, DPoint.X) - Most(APoint.X, BPoint.X));
+    BGap := Most(Least(APoint.Y, BPoint.Y) - Most(CPoint.Y, DPoint.Y),
+      Least(CPoint.Y, DPoint.Y) - Most(APoint.Y, BPoint.Y));
     Result := Most(Most(AGap, 0), Most(BGap, 0));
   end;
 
@@ -2077,7 +2082,8 @@ var
       while (N <= High(Close)) and (Close[N] < Pixel) do
       begin
         if N < High(TraceArray[I]) then
-          Walk := Walk + CrossGraph.Geometry.DistanceOf(TraceArray[I][N].Point, TraceArray[I][N + 1].Point);
+          Walk := Walk +
+            CrossGraph.Geometry.DistanceOf(TraceArray[I][N].Point, TraceArray[I][N + 1].Point);
         Inc(N);
       end;
       if Walk >= Edge then
@@ -2160,11 +2166,11 @@ begin
               Middle.Y := (TraceArray[I][K].Point.Y + TraceArray[I][K + 1].Point.Y) / 2;
               Span := NearestOnSegment(Middle, TraceArray[J][L].Point, TraceArray[J][L + 1].Point, Near);
               if Span < Close[K] then Close[K] := Span;
-              if not SegmentsCross(TraceArray[I][K].Point, TraceArray[I][K + 1].Point, TraceArray[J][L].Point,
-                TraceArray[J][L + 1].Point, Point) then
+              if not SegmentsCross(TraceArray[I][K].Point, TraceArray[I][K + 1].Point,
+                TraceArray[J][L].Point, TraceArray[J][L + 1].Point, Point) then
                 begin
-                  Span := SegmentsGap(TraceArray[I][K].Point, TraceArray[I][K + 1].Point, TraceArray[J][L].Point,
-                    TraceArray[J][L + 1].Point, Near);
+                  Span := SegmentsGap(TraceArray[I][K].Point, TraceArray[I][K + 1].Point,
+                    TraceArray[J][L].Point, TraceArray[J][L + 1].Point, Near);
                   if Span < Gap[K] then
                   begin
                     Gap[K] := Span;
@@ -2174,11 +2180,11 @@ begin
                   Continue;
                 end;
               if FHighPrecision then
-                Refine(I, J, TraceArray[I][K].Argument, TraceArray[I][K + 1].Argument, TraceArray[J][L].Argument,
-                  TraceArray[J][L + 1].Argument, Point);
+                Refine(I, J, TraceArray[I][K].Argument, TraceArray[I][K + 1].Argument,
+                  TraceArray[J][L].Argument, TraceArray[J][L + 1].Argument, Point);
               if not Examine(Point) then Continue;
-              Overlap := MakeOverlap(Point, MakeRange(TraceArray[I][K].Argument, TraceArray[I][K + 1].Argument),
-                I, J, FStep);
+              Overlap := MakeOverlap(Point,
+                MakeRange(TraceArray[I][K].Argument, TraceArray[I][K + 1].Argument), I, J, FStep);
               if FCS = csRectangular then
                 Overlap.Argument := Point.X
               else
@@ -2213,12 +2219,12 @@ begin
           if AEnd > High(TraceArray[I]) then AEnd := High(TraceArray[I]);
           BEnd := L + 2;
           if BEnd > High(TraceArray[J]) then BEnd := High(TraceArray[J]);
-          Span := Approach(I, J, TraceArray[I][K].Argument, TraceArray[I][AEnd].Argument, TraceArray[J][L].Argument,
-            TraceArray[J][BEnd].Argument, Point);
+          Span := Approach(I, J, TraceArray[I][K].Argument, TraceArray[I][AEnd].Argument,
+            TraceArray[J][L].Argument, TraceArray[J][BEnd].Argument, Point);
           if Span > Chord * TouchShare then Continue;
           if not Examine(Point) then Continue;
-          Overlap := MakeOverlap(Point, MakeRange(TraceArray[I][K].Argument, TraceArray[I][K + 1].Argument),
-            I, J, FStep);
+          Overlap := MakeOverlap(Point,
+            MakeRange(TraceArray[I][K].Argument, TraceArray[I][K + 1].Argument), I, J, FStep);
           if FCS = csRectangular then
             Overlap.Argument := Point.X
           else
@@ -2314,8 +2320,9 @@ begin
             if Assigned(AFunction) then
             begin
               K := FParser.CreateRedirect;
-              if FParser.SetRedirect(K, FRedirectCategory, AFunction.Method.Variable.Handle, BFunction.Method.Variable.Handle) then
-                FRedirectList.Add(Pointer(K));
+              if FParser.SetRedirect(K, FRedirectCategory, AFunction.Method.Variable.Handle,
+                BFunction.Method.Variable.Handle) then
+                  FRedirectList.Add(Pointer(K));
             end;
           end;
           AddScript(FSA, Script);
@@ -2497,8 +2504,8 @@ begin
                       if Below(FWorkData.MaxArray[M].Y, FWorkData.MaxArray[L].Y, FEpsilon) then
                         M := L;
                   else
-                    if Below(DistanceOf(ZeroPoint, FWorkData.MaxArray[M]), DistanceOf(ZeroPoint, FWorkData.MaxArray[L]),
-                      FEpsilon) then
+                    if Below(DistanceOf(ZeroPoint, FWorkData.MaxArray[M]),
+                      DistanceOf(ZeroPoint, FWorkData.MaxArray[L]), FEpsilon) then
                         M := L;
                   end;
                   Continue;
@@ -2527,8 +2534,8 @@ begin
                       if Above(FWorkData.MinArray[M].Y, FWorkData.MinArray[L].Y, FEpsilon) then
                         M := L;
                   else
-                    if Above(DistanceOf(ZeroPoint, FWorkData.MinArray[M]), DistanceOf(ZeroPoint, FWorkData.MinArray[L]),
-                      FEpsilon) then
+                    if Above(DistanceOf(ZeroPoint, FWorkData.MinArray[M]),
+                      DistanceOf(ZeroPoint, FWorkData.MinArray[L]), FEpsilon) then
                         M := L;
                   end;
                   Continue;
@@ -2775,8 +2782,8 @@ function TGraphEngine.GetBusy: Boolean;
 
 begin
   Result := Working or (not Assigned(FOverlapThread) or FOverlapThread.Started or (FOverlap and
-    FOverlapThread.Prepared)) or (not Assigned(FExtremeThread) or FExtremeThread.Started or (FExtreme and
-    FExtremeThread.Prepared));
+    FOverlapThread.Prepared)) or (not Assigned(FExtremeThread) or FExtremeThread.Started or
+    (FExtreme and FExtremeThread.Prepared));
 end;
 
 function TGraphEngine.GetThreadCount: Integer;
@@ -2890,9 +2897,10 @@ end;
 
 function TGraphEngine.Examine(const Point: TPointD): Boolean;
 begin
-  Result := not IsNan(Point.X) and not IsInfinite(Point.X) and not IsNan(Point.Y) and not IsInfinite(Point.Y) and
-    AboveOrEqual(Point.X, FMin.X, FEpsilon) and BelowOrEqual(Point.X, FMax.X, FEpsilon) and
-    AboveOrEqual(Point.Y, FMin.Y, FEpsilon) and BelowOrEqual(Point.Y, FMax.Y, FEpsilon);
+  Result := not IsNan(Point.X) and not IsInfinite(Point.X) and not IsNan(Point.Y) and
+    not IsInfinite(Point.Y) and AboveOrEqual(Point.X, FMin.X, FEpsilon) and
+    BelowOrEqual(Point.X, FMax.X, FEpsilon) and AboveOrEqual(Point.Y, FMin.Y, FEpsilon) and
+    BelowOrEqual(Point.Y, FMax.Y, FEpsilon);
 end;
 
 function TGraphEngine.ComputePolar(const Value: Extended; const Script: TScript): TPointD;
@@ -2963,11 +2971,13 @@ begin
     if Equal(FMax.Y, 0) then
       Result.Range.Min := Pi
     else
-      Result.Range.Min := Angle360 - VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMin.X, FMax.Y));
+      Result.Range.Min := Angle360 -
+        VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMin.X, FMax.Y));
     if Equal(FMax.X, 0) then
       Result.Range.Max := Pi + Angle90
     else
-      Result.Range.Max := Angle360 - VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMax.X, FMin.Y));
+      Result.Range.Max := Angle360 -
+        VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMax.X, FMin.Y));
     Result.FromCenter[dtMin] := DistanceOf(ZeroPoint, FMax);
     Result.FromCenter[dtMax] := DistanceOf(ZeroPoint, FMin);
   end
@@ -2977,11 +2987,13 @@ begin
     if Equal(FMin.X, 0) then
       Result.Range.Min := Pi + Angle90
     else
-      Result.Range.Min := Angle360 - VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMin.X, FMin.Y));
+      Result.Range.Min := Angle360 -
+        VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMin.X, FMin.Y));
     if Equal(FMax.Y, 0) then
       Result.Range.Max := Angle360
     else
-      Result.Range.Max := Angle360 - VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMax.X, FMax.Y));
+      Result.Range.Max := Angle360 -
+        VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMax.X, FMax.Y));
     Result.FromCenter[dtMin] := DistanceOf(ZeroPoint, PointD(FMin.X, FMax.Y));
     Result.FromCenter[dtMax] := DistanceOf(ZeroPoint, PointD(FMax.X, FMin.Y));
   end
@@ -3013,7 +3025,8 @@ begin
     end
     else begin
       Result.Range.Min := VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMax.X, FMax.Y));
-      Result.Range.Max := Angle360 - VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMax.X, FMin.Y));
+      Result.Range.Max := Angle360 -
+        VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMax.X, FMin.Y));
     end;
     Result.FromCenter[dtMin] := DistanceOf(ZeroPoint, PointD(FMax.X, 0));
     if Above(Abs(FMax.Y), Abs(FMin.Y), FEpsilon) then
@@ -3030,8 +3043,10 @@ begin
       Result.Range.Max := Angle360;
     end
     else begin
-      Result.Range.Min := Angle360 - VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMin.X, FMax.Y));
-      Result.Range.Max := Angle360 - VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMax.X, FMax.Y));
+      Result.Range.Min := Angle360 -
+        VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMin.X, FMax.Y));
+      Result.Range.Max := Angle360 -
+        VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMax.X, FMax.Y));
     end;
     Result.FromCenter[dtMin] := DistanceOf(ZeroPoint, PointD(0, FMax.Y));
     if Above(Abs(FMax.X), Abs(FMin.X), FEpsilon) then
@@ -3048,7 +3063,8 @@ begin
       Result.Range.Max := Angle360 + Angle90;
     end
     else begin
-      Result.Range.Min := Angle360 - VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMin.X, FMin.Y));
+      Result.Range.Min := Angle360 -
+        VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMin.X, FMin.Y));
       Result.Range.Max := VertexAngle(PointD(FMaxX, 0), ZeroPoint, PointD(FMin.X, FMax.Y));
     end;
     Result.FromCenter[dtMin] := DistanceOf(ZeroPoint, PointD(FMin.X, 0));
@@ -3377,7 +3393,8 @@ begin
     FExtremeThread.Exchange := @FExchange;
     FExtremeThread.VaryRadius := FExtremeVaryRadius;
     if FMarkSpacing > 0 then
-      FExtremeThread.VoidRadius := FMarkSpacing * DistanceOf(CursorToPoint(PointD(0, 0)), CursorToPoint(PointD(1, 0)))
+      FExtremeThread.VoidRadius := FMarkSpacing * DistanceOf(CursorToPoint(PointD(0, 0)),
+        CursorToPoint(PointD(1, 0)))
     else
       FExtremeThread.VoidRadius := FExtremeVoidRadius;
     FExtremeThread.Min := FMin;

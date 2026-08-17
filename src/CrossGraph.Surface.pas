@@ -215,14 +215,14 @@ begin
       end;
       if (Corner[1] > 0) <> (Corner[2] > 0) then
       begin
-        Points[Count] := Cross(Surface.X(Column + 1), Surface.Y(Row), Corner[1], Surface.X(Column + 1),
-          Surface.Y(Row + 1), Corner[2]);
+        Points[Count] := Cross(Surface.X(Column + 1), Surface.Y(Row), Corner[1],
+          Surface.X(Column + 1), Surface.Y(Row + 1), Corner[2]);
         Inc(Count);
       end;
       if (Corner[2] > 0) <> (Corner[3] > 0) then
       begin
-        Points[Count] := Cross(Surface.X(Column + 1), Surface.Y(Row + 1), Corner[2], Surface.X(Column),
-          Surface.Y(Row + 1), Corner[3]);
+        Points[Count] := Cross(Surface.X(Column + 1), Surface.Y(Row + 1), Corner[2],
+          Surface.X(Column), Surface.Y(Row + 1), Corner[3]);
         Inc(Count);
       end;
       if (Corner[3] > 0) <> (Corner[0] > 0) then

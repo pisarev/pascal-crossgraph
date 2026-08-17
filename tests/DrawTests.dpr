@@ -118,10 +118,13 @@ begin
   if (Host.Graph.Formula.Count < 2) or (Length(Host.Graph.ColorArray) < 2) then Exit;
   for I := 0 to 1 do
   begin
-    Note(Format('formula %d: colour %.8x, in the palette %.8x', [I, Host.Graph.Formula.Data[I].Color, Host.Graph.ColorArray[I]]));
-    Check(Host.Graph.Formula.Data[I].Color = Host.Graph.ColorArray[I], Format('formula %d got a palette colour', [I]));
+    Note(Format('formula %d: colour %.8x, in the palette %.8x',
+      [I, Host.Graph.Formula.Data[I].Color, Host.Graph.ColorArray[I]]));
+    Check(Host.Graph.Formula.Data[I].Color = Host.Graph.ColorArray[I],
+      Format('formula %d got a palette colour', [I]));
   end;
-  Check(Host.Graph.Formula.Data[0].Color <> Host.Graph.Formula.Data[1].Color, 'different formulas have different colours');
+  Check(Host.Graph.Formula.Data[0].Color <> Host.Graph.Formula.Data[1].Color,
+    'different formulas have different colours');
 end;
 
 procedure TestTrace;
@@ -151,7 +154,8 @@ begin
       Expected := Sin(Places[I]);
       Check(TracedCount > 0, Format('x = %.1f: tracing worked', [Places[I]]));
       if TracedCount = 0 then Continue;
-      Note(Format('x = %.1f: got (%.3f; %.3f), expected (%.3f; %.3f)', [Places[I], TracedPoint.X, TracedPoint.Y, Places[I], Expected]));
+      Note(Format('x = %.1f: got (%.3f; %.3f), expected (%.3f; %.3f)',
+        [Places[I], TracedPoint.X, TracedPoint.Y, Places[I], Expected]));
       Check(Abs(TracedPoint.X - Places[I]) < 0.05, Format('x = %.1f: the argument', [Places[I]]));
       Check(Abs(TracedPoint.Y - Expected) < 0.05, Format('x = %.1f: the formula value', [Places[I]]));
     end;

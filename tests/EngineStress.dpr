@@ -207,6 +207,7 @@ begin
     Engine.Free;
     Waiter.Free;
   end;
-  Writeln(Format('TOTAL: runs %d, empty %d, formula lost %d, boundaries broken %d, exceptions %d', [Rounds, Empty, Lost, Torn, Broken]));
+  Writeln(Format('TOTAL: runs %d, empty %d, formula lost %d, boundaries broken %d, exceptions %d',
+    [Rounds, Empty, Lost, Torn, Broken]));
   if Empty + Lost + Torn + Broken > 0 then Halt(1);
 end.

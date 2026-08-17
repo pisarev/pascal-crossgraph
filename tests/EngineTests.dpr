@@ -171,7 +171,8 @@ begin
       [Name, Length(Engine.OverlapArray), Length(Roots), Error, GetTickCount - Start]));
     Check(Done, Name + ': computation finished');
     Check(Error <= Grain, Name + ': coordinates match the analytic ones');
-    Check(Length(Engine.OverlapArray) = Length(Roots), Format('%s: exactly %d intersections', [Name, Length(Roots)]));
+    Check(Length(Engine.OverlapArray) = Length(Roots),
+      Format('%s: exactly %d intersections', [Name, Length(Roots)]));
     Check(Strays(Engine.OverlapArray, Roots, Grain) = 0, Name + ': no spurious points');
     Check(Twins(Engine.OverlapArray) = 0, Name + ': no point reported twice');
   finally
@@ -415,7 +416,8 @@ begin
       for J := I + 1 to High(Found) do
         if Sqrt(Sqr(Found[I].X - Found[J].X) + Sqr(Found[I].Y - Found[J].Y)) <= Grain then
           Inc(Twin);
-    Emit(Format('       %s: marks %d, off the expected places %d, repeats %d, %d ms', [Name, Count, Stray, Twin, GetTickCount - Start]));
+    Emit(Format('       %s: marks %d, off the expected places %d, repeats %d, %d ms',
+      [Name, Count, Stray, Twin, GetTickCount - Start]));
     for J := Low(Found) to High(Found) do
       Emit(Format('         (%.6f, %.6f)', [Found[J].X, Found[J].Y]));
     Check(Done, Name + ': computation finished');
@@ -560,9 +562,11 @@ begin
   end;
   Check(Sqrt(Sqr(Close.X - Expect.X) + Sqr(Close.Y - Expect.Y)) <= Grain,
     Format('%s: at the close view the extremum is where it is', [Name]));
-  Check(Sqrt(Sqr(Wide.X - Expect.X) + Sqr(Wide.Y - Expect.Y)) <= Grain, Format('%s: at the wide view the extremum is where it is', [Name]));
+  Check(Sqrt(Sqr(Wide.X - Expect.X) + Sqr(Wide.Y - Expect.Y)) <= Grain,
+    Format('%s: at the wide view the extremum is where it is', [Name]));
   Apart := Sqrt(Sqr(Close.X - Wide.X) + Sqr(Close.Y - Wide.Y));
-  Check(Apart <= Grain, Format('%s: the mark stayed put when the view changed, apart by %.3g', [Name, Apart]));
+  Check(Apart <= Grain,
+    Format('%s: the mark stayed put when the view changed, apart by %.3g', [Name, Apart]));
 end;
 
 procedure Turns;
@@ -595,8 +599,10 @@ begin
     Engine.Formula.Add('sin(T)', True, True, False);
     Single_ := Points(Pi * 2);
     Double_ := Points(Pi * 4);
-    Emit(Format('       polar angle in radians: one turn %d points, two %d, ratio %.2f', [Single_, Double_, Double_ / Single_]));
-    Check((Double_ / Single_ > 1.5) and (Double_ / Single_ < 3), 'the polar angle is given in radians, not degrees');
+    Emit(Format('       polar angle in radians: one turn %d points, two %d, ratio %.2f',
+      [Single_, Double_, Double_ / Single_]));
+    Check((Double_ / Single_ > 1.5) and (Double_ / Single_ < 3),
+      'the polar angle is given in radians, not degrees');
   finally
     Engine.Free;
   end;
@@ -622,7 +628,8 @@ begin
     begin
       T.WorkTime := Limits[I];
       Check(T.AbortTime = T.WorkTime * 2, Format('limit %d: the wait is twice as long', [Limits[I]]));
-      Check((Limits[I] = 0) or (T.AbortTime > T.WorkTime), Format('limit %d: the wait is strictly longer', [Limits[I]]));
+      Check((Limits[I] = 0) or (T.AbortTime > T.WorkTime),
+        Format('limit %d: the wait is strictly longer', [Limits[I]]));
     end;
   finally
     T.Free;
@@ -718,7 +725,8 @@ begin
   end;
   try
     H := ConvexHull(Nasty, False);
-    Check(Length(H) > 0, Format('two hundred thousand points did not blow the stack, %d vertices', [Length(H)]));
+    Check(Length(H) > 0,
+      Format('two hundred thousand points did not blow the stack, %d vertices', [Length(H)]));
   except
     on E: Exception do
       Check(False, 'two hundred thousand points: ' + E.ClassName + ': ' + E.Message);
@@ -735,11 +743,14 @@ begin
         [Root(Pi / 4, Sin(Pi / 4)), Root(Pi / 4 + Pi, Sin(Pi / 4 + Pi)), Root(Pi / 4 - Pi, Sin(Pi / 4 - Pi))]);
       One('parabola and line', 'X * X', 'X + 2', False, 4, 6, 100, [Root(-1, 1), Root(2, 4)]);
       One('cubic and line', 'X * X * X', 'X', False, 3, 3, 100, [Root(-1, -1), Root(0, 0), Root(1, 1)]);
-      One('polar circles', '1', '2 * cos(T)', True, 3, 3, 100, [Root(Cos(Pi / 3), Sin(Pi / 3)), Root(Cos(Pi / 3), -Sin(Pi / 3))]);
-      One('polar circles through the pole', 'sin(T)', 'cos(T) / 2', True, 2, 2, 100, [Root(0, 0), Root(0.4, 0.2)]);
-      One('polar circles, panel limits', 'sin(T)', 'cos(T) / 2', True, 10, 10, 16, [Root(0, 0), Root(0.4, 0.2)], 1000);
-      One('polar circles, panel without high precision', 'sin(T)', 'cos(T) / 2', True, 10, 10, 16, [Root(0, 0), Root(0.4, 0.2)],
-        1000, False, 1E-3);
+      One('polar circles', '1', '2 * cos(T)', True, 3, 3, 100,
+        [Root(Cos(Pi / 3), Sin(Pi / 3)), Root(Cos(Pi / 3), -Sin(Pi / 3))]);
+      One('polar circles through the pole', 'sin(T)', 'cos(T) / 2', True, 2, 2, 100,
+        [Root(0, 0), Root(0.4, 0.2)]);
+      One('polar circles, panel limits', 'sin(T)', 'cos(T) / 2', True, 10, 10, 16,
+        [Root(0, 0), Root(0.4, 0.2)], 1000);
+      One('polar circles, panel without high precision', 'sin(T)', 'cos(T) / 2', True, 10, 10, 16,
+        [Root(0, 0), Root(0.4, 0.2)], 1000, False, 1E-3);
       One(
         'rose and circle',
         'sin(2 * T)',
@@ -816,7 +827,8 @@ begin
       Sharp('shifted parabola', '(X - 0.3719) * (X - 0.3719)', Root(0.3719, 0), 3, 7);
       Sharp('shifted sine', 'sin(X - 0.4)', Root(0.4 + Pi / 2, 1), 3, 7);
       Sharp('shifted cusp', 'sqrt((X - 0.3719) * (X - 0.3719))', Root(0.3719, 0), 3, 7);
-      Peaks('sine', 'sin(X)', False, 5, 2, [Root(-3 * Pi / 2, 1), Root(Pi / 2, 1), Root(-Pi / 2, -1), Root(3 * Pi / 2, -1)], 3.4E-2);
+      Peaks('sine', 'sin(X)', False, 5, 2,
+        [Root(-3 * Pi / 2, 1), Root(Pi / 2, 1), Root(-Pi / 2, -1), Root(3 * Pi / 2, -1)], 3.4E-2);
       Peaks('circle of constant radius', '2', True, 6, 6, []);
       Peaks('same circle with a minus', '0 - 2', True, 6, 6, []);
       Steady('fast sine at two views', 'sin(30 * X)', False, 3, 12, 14);
