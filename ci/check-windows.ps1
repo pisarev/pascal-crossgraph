@@ -15,7 +15,7 @@
     FPC_EXE      the FPC compiler
     LAZARUS_DIR  the Lazarus folder
 
-  Run: pwsh -File ci\check-windows.ps1
+  Run: powershell -ExecutionPolicy Bypass -File ci\check-windows.ps1
   The exit code is the number of failed PLUS skipped steps. A skip counts on
   purpose: a run with skips is never green, it is incomplete, and the exit code
   must not keep quiet about it.

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <Package Version="5">
     <PathDelim Value="/"/>
@@ -26,7 +26,7 @@
     </CompilerOptions>
     <Description Value="Plotting on top of MathParser: the computation core and the visual component"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="3" Release="0"/>
+    <Version Major="1" Minor="3" Release="1"/>
     <Files>
       <Item>
         <Filename Value="../../src/CrossGraph.Types.pas"/>

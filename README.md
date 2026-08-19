@@ -90,8 +90,12 @@ said on the spot.
 
 ```
 set FPC_EXE=C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe
-pwsh -File ci\check-windows.ps1
+powershell -ExecutionPolicy Bypass -File ci\check-windows.ps1
 ```
+
+The commands are for the PowerShell that ships with Windows; nothing here needs
+PowerShell 7. `-ExecutionPolicy Bypass` is what lets a downloaded script run
+under the default policy, and it holds for that one run only.
 
 That builds and runs everything: the component on win32 and win64 under Delphi,
 and the engine headless under FPC. It ends with `MATRIX IS GREEN`.
