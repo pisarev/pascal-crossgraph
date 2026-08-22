@@ -819,7 +819,7 @@ end;
 
 procedure TGraph.Abort;
 begin
-  FEngine.Abort;
+  if Assigned(FEngine) then FEngine.Abort;
 end;
 
 procedure TGraph.Attach;

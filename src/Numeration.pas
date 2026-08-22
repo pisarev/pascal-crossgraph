@@ -78,7 +78,7 @@ type
   end;
 
 const
-  ValueError = '"%s" is not valid value';
+  ValueError = '"%s" is not a valid value';
 
 implementation
 
@@ -92,8 +92,6 @@ uses
   Math, TextUtils;
   {$ENDIF}
   {$ENDIF}
-
-{ TNumeration }
 
 function TNumeration.Add(const Value: string): Integer;
 begin

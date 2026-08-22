@@ -1112,7 +1112,8 @@ begin
   begin
     FParser.BeginUpdate;
     try
-      FParser.AddVariable(ValueVariableName + IntToHex(NativeInt(Self), 0), FLocalValue, False);
+      FParser.AddVariable(ValueVariableName + 'P' + IntToHex(NativeInt(Self), 0),
+        FLocalValue, False);
     finally
       FParser.EndUpdate;
       FParser.Notify(ntCompile, Self);
@@ -2626,7 +2627,7 @@ end;
 destructor TGraphEngine.Destroy;
 begin
   FActive := False;
-  FFormula.OnChanging := nil;
+  if Assigned(FFormula) then FFormula.OnChanging := nil;
   Abort;
   FThreadList.Free;
   FOverlapThread.Free;
@@ -2719,9 +2720,10 @@ procedure TGraphEngine.Abort;
 var
   I: Integer;
 begin
-  for I := 0 to FThreadList.Count - 1 do FThreadList[I].Abort;
-  FOverlapThread.Abort;
-  FExtremeThread.Abort;
+  if Assigned(FThreadList) then
+    for I := 0 to FThreadList.Count - 1 do FThreadList[I].Abort;
+  if Assigned(FOverlapThread) then FOverlapThread.Abort;
+  if Assigned(FExtremeThread) then FExtremeThread.Abort;
 end;
 
 procedure TGraphEngine.StartOverlap;
@@ -3280,7 +3282,8 @@ procedure TGraphEngine.DoParse;
 var
   I, J, Prior: Integer;
   Script: TScript;
-  Step: Extended;
+  Step, MarkPixel: Extended;
+  MarkReady: Boolean;
   Data: PFormulaData;
   Guard: TLoopGuard;
 begin
@@ -3392,9 +3395,15 @@ begin
   begin
     FExtremeThread.Exchange := @FExchange;
     FExtremeThread.VaryRadius := FExtremeVaryRadius;
+    if (FSize.cx > 0) and (FSize.cy > 0) and Above(FMaxX, 0, FEpsilon) and
+      Above(FMaxY, 0, FEpsilon) then
+        MarkPixel := DistanceOf(CursorToPoint(PointD(0, 0)), CursorToPoint(PointD(1, 0)))
+    else
+      MarkPixel := 0;
+    MarkReady := (FMarkSpacing <= 0) or (not IsNan(MarkPixel) and
+      not IsInfinite(MarkPixel) and Above(MarkPixel, 0, FEpsilon));
     if FMarkSpacing > 0 then
-      FExtremeThread.VoidRadius := FMarkSpacing * DistanceOf(CursorToPoint(PointD(0, 0)),
-        CursorToPoint(PointD(1, 0)))
+      FExtremeThread.VoidRadius := FMarkSpacing * MarkPixel
     else
       FExtremeThread.VoidRadius := FExtremeVoidRadius;
     FExtremeThread.Min := FMin;
@@ -3413,8 +3422,8 @@ begin
     else
       FExtremeThread.Compute := FExtremeThread.ComputeRectangular;
     FExtremeThread.Examine := Examine;
-    FExtremeThread.Prepared := True;
-    if FExtreme then FExtremeThread.Start;
+    FExtremeThread.Prepared := MarkReady;
+    if FExtreme and MarkReady then FExtremeThread.Start;
   end;
   finally
     DisarmLoopGuard(Guard);
