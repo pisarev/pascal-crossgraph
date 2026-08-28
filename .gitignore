@@ -8,6 +8,9 @@
 *.identcache
 *.dsk
 *.res
+# The palette icons are an input, not a build product: CrossGraph.pas carries
+# {$R crosspascal_graph_icons.res} and the unit does not compile without it.
+!src/crosspascal_graph_icons.res
 out/
 lib/
 bin/

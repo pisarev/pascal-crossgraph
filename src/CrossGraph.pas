@@ -565,6 +565,10 @@ var
 
 implementation
 
+{$IFDEF FPC}
+{$R crosspascal_graph_icons.res}
+{$ENDIF}
+
 uses
   {$IFDEF FPC}
   Forms, Math, Notifier, MemoryUtils, NumberConsts, ParseConsts, ParseErrors, ParseUtils,
@@ -601,7 +605,7 @@ end;
 
 procedure Register;
 begin
-  RegisterComponents('Samples', [TGraph]);
+  RegisterComponents('CrossPascal', [TGraph]);
 end;
 
 {$IFDEF GRAPHTHREADCHECK}

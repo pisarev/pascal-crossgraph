@@ -148,7 +148,7 @@ The parser packages next door come along on their own: this one requires them.
 
 `packages/lazarus/crosspascal_graph.lpk` is a design-time package as well as a
 runtime one. Open it in Lazarus and press `Install`: the IDE rebuilds itself and
-`TGraph` appears on the `Samples` page of the component palette, ready to be
+`TGraph` appears on the `CrossPascal` page of the component palette, ready to be
 dropped on a form.
 
 The parser and the accelerator next door come along here too, and they carry
