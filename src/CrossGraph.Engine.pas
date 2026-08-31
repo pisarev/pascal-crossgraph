@@ -60,6 +60,8 @@ type
   TComputeMethod = function(const Value: Extended; const Script: TScript): TPointD of object;
   TExamineMethod = function(const Point: TPointD): Boolean of object;
 
+  TTornMethod = function(const HasPrev: Boolean; const Prev, Next: TPointD): Boolean of object;
+
   TGraphEngine = class;
 
   TParseThread = class;
@@ -240,6 +242,7 @@ type
     FDisplay: TDisplay;
     FPointArray: TCurveDArray;
     FExamine: TExamineMethod;
+    FTorn: TTornMethod;
     FGap: TGap;
     FWorkData: TParseWorkData;
     FRangeArray: TRangeArray;
@@ -273,6 +276,7 @@ type
     property PointToCursor: TConvertMethod read FPointToCursor write FPointToCursor;
     property CursorToPoint: TConvertMethod read FCursorToPoint write FCursorToPoint;
     property Examine: TExamineMethod read FExamine write FExamine;
+    property Torn: TTornMethod read FTorn write FTorn;
   end;
 
   TOverlapThread = class(TGraphThread)
@@ -466,6 +470,7 @@ type
     function ComputePolar(const Value: Extended; const Script: TScript): TPointD; virtual;
     function ComputeRectangular(const Value: Extended; const Script: TScript): TPointD; virtual;
     function Examine(const Point: TPointD): Boolean; virtual;
+    function Torn(const HasPrev: Boolean; const Prev, Next: TPointD): Boolean; virtual;
     function PointCount(const Segment: PExtended = nil): Extended; virtual;
     procedure Abort; virtual;
     procedure Attach; virtual;
@@ -1629,11 +1634,11 @@ begin
           end;
         end;
         J := 0;
+        Index := CrossGraph.Types.New(FPointArray);
+        FillChar(Pair, SizeOf(TPair), 0);
         while not Stopped and not Overtime and (J < Length(FWorkData.MapArray)) do
         begin
-          Index := CrossGraph.Types.New(FPointArray);
           Shift := 0;
-          FillChar(Pair, SizeOf(TPair), 0);
           Float80^ := FWorkData.MapArray[J].Min;
           Prev := Float80^;
           while not Stopped and not Overtime and Below(Float80^, FWorkData.MapArray[J].Max, FEpsilon) do
@@ -1641,7 +1646,7 @@ begin
             Pair.Next := FCompute(Float80^, FScript);
             if FAutoquality and not Pair.Flag and (IncreaseQuality or DecreaseQuality) then
               Continue;
-            FGap[K] := not FExamine(Pair.Next);
+            FGap[K] := FTorn(Pair.HasPrev, Pair.Prev, Pair.Next);
             if FGap[K] then
             begin
               FlushSkip;
@@ -2905,6 +2910,25 @@ begin
     BelowOrEqual(Point.Y, FMax.Y, FEpsilon);
 end;
 
+function TGraphEngine.Torn(const HasPrev: Boolean; const Prev, Next: TPointD): Boolean;
+
+  function Above(const Point: TPointD): Boolean;
+  begin
+    Result := Point.Y > FMax.Y;
+  end;
+
+  function Below(const Point: TPointD): Boolean;
+  begin
+    Result := Point.Y < FMin.Y;
+  end;
+
+begin
+  Result := IsNan(Next.X) or IsInfinite(Next.X) or IsNan(Next.Y) or IsInfinite(Next.Y);
+  if Result or not HasPrev then Exit;
+  if IsNan(Prev.Y) or IsInfinite(Prev.Y) then Exit(True);
+  Result := (Below(Prev) and Above(Next)) or (Above(Prev) and Below(Next));
+end;
+
 function TGraphEngine.ComputePolar(const Value: Extended; const Script: TScript): TPointD;
 var
   Guard: TLoopGuard;
@@ -3159,6 +3183,18 @@ procedure TGraphEngine.Capture;
 var
   I, J, Prior: Integer;
   Source: TCurveDArray;
+  Edge: TPointD;
+  Cut: Boolean;
+
+  function LastShown(out Point: TPointD): Boolean;
+  var
+    K: Integer;
+  begin
+    K := Length(FEntireArray) - 1;
+    Result := (K >= 0) and Assigned(FEntireArray[K]) and (Length(FEntireArray[K]) > 0);
+    if Result then Point := FEntireArray[K][Length(FEntireArray[K]) - 1];
+  end;
+
 begin
   for I := 0 to FThreadList.Count - 1 do
   begin
@@ -3172,9 +3208,11 @@ begin
       end;
     for J := Low(Source) to High(Source) do
     begin
-      if (J > Low(Source)) or FThreadList[I].Gap[gtBack] or ((Prior >= 0) and (((I - Prior) > 1) or
-        FThreadList[Prior].Gap[gtFace])) then
-          CrossGraph.Types.New(FEntireArray);
+      Cut := (J > Low(Source)) or FThreadList[I].Gap[gtBack] or ((Prior >= 0) and (((I - Prior) > 1) or
+        FThreadList[Prior].Gap[gtFace]));
+      if not Cut and (Prior >= 0) and (Length(Source[J]) > 0) and LastShown(Edge) then
+        Cut := Torn(True, Edge, Source[J][Low(Source[J])]);
+      if Cut then CrossGraph.Types.New(FEntireArray);
       CrossGraph.Types.Add(FEntireArray, Source, J);
     end;
     Source := nil;
@@ -3224,6 +3262,7 @@ begin
       AThread.PointToCursor := PointToCursor;
       AThread.CursorToPoint := CursorToPoint;
       AThread.Examine := Examine;
+      AThread.Torn := Torn;
       if not AThread.Start then
       begin
         AThread.Stop;
