@@ -155,6 +155,16 @@ The parser and the accelerator next door come along here too, and they carry
 components of their own - eleven of them, listed in the parser's README - which
 appear on the same page.
 
+## The shortest program that draws something
+
+`samples/GettingStarted.lpi` is a whole application in seventy lines: a form, the
+component filling it, two formulas and `Build`. It is built the same way as
+anything else here - `lazbuild samples/GettingStarted.lpi` with the package
+installed - and the form is assembled in code rather than in a `.lfm`, so the
+example does not depend on the version of the form format.
+
+Start there before reading any of what follows.
+
 ## The engine without a screen
 
 `-dNOFORMS` keeps Forms out of the base thread unit and `-dNOGRAPHICS` keeps
@@ -175,6 +185,10 @@ the LCL on Lazarus.
 | `EngineTests` | intersections with no form, no window and no message queue |
 | `EngineStress` | changing formulas without waiting for the previous computation |
 | `EngineBench` | what machine code gives when sampling |
+
+Each test carries an `.lpi` beside its `.dpr`, so any of them opens in Lazarus
+as a project. `GraphTests` and `EngineBench` were Delphi-only until 1.3.6; both
+build under FPC now.
 
 `GraphTests` compares against closed-form answers rather than against a previous
 run: a test that agrees with yesterday's output agrees with yesterday's bugs too.

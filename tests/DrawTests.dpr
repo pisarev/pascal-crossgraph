@@ -13,7 +13,7 @@ program DrawTests;
 
 uses
   {$IFDEF FPC}
-  Windows, Messages, SysUtils, Math, Graphics,
+  Interfaces, Windows, Messages, SysUtils, Math, Graphics, Forms,
   {$ELSE}
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Math, Vcl.Graphics,
   {$ENDIF}
@@ -48,8 +48,8 @@ begin
       R := C and $FF;
       G := (C shr 8) and $FF;
       B := (C shr 16) and $FF;
-      if (Abs(R - WantR) < Near) and (Abs(G - WantG) < Near) and (Abs(B - WantB) < Near) then
-        Inc(Result);
+      if (Abs(R - WantR) < Near) and (Abs(G - WantG) < Near) and
+        (Abs(B - WantB) < Near) then Inc(Result);
     end;
 end;
 
@@ -141,6 +141,13 @@ begin
   GraphCase.PenColor := CurveColor;
   GraphCase.TraceFormula := True;
   Host.Run(GraphCase, wkNone);
+  {$IFDEF FPC}
+  if Host.Graph.Parent is TForm then
+  begin
+    TForm(Host.Graph.Parent).Show;
+    Application.ProcessMessages;
+  end;
+  {$ENDIF}
   Tracer := TTracer.Create;
   try
     Host.Graph.Tracing := True;
@@ -164,6 +171,9 @@ begin
     X := Round(Host.Graph.XToCursor(Places[High(Places)]));
     Y := Host.Graph.Height div 2;
     Host.Graph.Perform(WM_MOUSEMOVE, 0, LPARAM(X or (Y shl 16)));
+    {$IFDEF FPC}
+    Host.Graph.Repaint;
+    {$ENDIF}
     Painted := ColorPixels(Host.Graph.Buffer, TraceColor);
     Note(Format('tracing pen pixels in the buffer: %d', [Painted]));
     Check(Painted > 0, 'the tracing goes into the buffer instead of over it');
@@ -175,6 +185,9 @@ end;
 
 begin
   try
+    {$IFDEF FPC}
+    Application.Initialize;
+    {$ENDIF}
     Host := TGraphHost.Create;
     try
       TestCurveDrawn;

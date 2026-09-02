@@ -6,33 +6,40 @@
 {                                                                            }
 { ************************************************************************** }
 
-{
-  What machine code gives when sampling the points of a plot. The sampling
-  itself is timed on a large canvas, where it dominates, and separately it is
-  checked whether the accelerator takes a particular formula.
-}
-
 program EngineBench;
 
 {$APPTYPE CONSOLE}
 
 uses
+  {$IFDEF FPC}
+  {$IFDEF UNIX}cthreads,{$ENDIF}
+  SysUtils, Math, Classes, Types, ParseTypes, Parser, ParseJit.Parser, CrossVision.Geometry.Types,
+  CrossGraph.Types, CrossGraph.Engine;
+  {$ELSE}
   Winapi.Windows, System.SysUtils, System.Math, System.Classes, ParseTypes, Parser,
   ParseJit.Parser, CrossVision.Geometry.Types, CrossGraph.Types, CrossGraph.Engine;
+  {$ENDIF}
 
 const
   CanvasSide = 4000;
   Repeats = 40;
 
-{ A precise timer: a few milliseconds is below the resolution of GetTickCount }
 function Ticks: Int64;
 begin
+  {$IFDEF FPC}
+  Result := Int64(SysUtils.GetTickCount64);
+  {$ELSE}
   QueryPerformanceCounter(Result);
+  {$ENDIF}
 end;
 
 function Frequency: Int64;
 begin
+  {$IFDEF FPC}
+  Result := 1000;
+  {$ELSE}
   QueryPerformanceFrequency(Result);
+  {$ENDIF}
 end;
 
 var
@@ -44,7 +51,6 @@ begin
   Report.Add(Line);
 end;
 
-// Whether the accelerator takes the formula, and why not.
 function JitVerdict(const Formula: string): string;
 var
   Parser: TJitParser;
@@ -73,7 +79,6 @@ begin
   end;
 end;
 
-// The number of points over all curves - a measure of how much was sampled.
 function PointTotal(const Curves: TCurveDArray): Integer;
 var
   I: Integer;
@@ -95,7 +100,6 @@ begin
     Engine.CS := csRectangular;
     Engine.MaxX := 5;
     Engine.MaxY := 2;
-    // Sampling only: the search for intersections and extrema is switched off.
     Engine.Overlap := False;
     Engine.Extreme := False;
     Engine.JitEnabled := Jit;
