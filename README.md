@@ -191,7 +191,8 @@ as a project. `GraphTests` and `EngineBench` were Delphi-only until 1.3.6; both
 build under FPC now.
 
 `GraphTests` compares against closed-form answers rather than against a previous
-run: a test that agrees with yesterday's output agrees with yesterday's bugs too.
+run: a test that agrees with yesterday's output agrees with yesterday's
+mistakes too.
 
 ## Licence
 

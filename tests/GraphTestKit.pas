@@ -42,13 +42,37 @@ type
     MaxDepth: Integer;
     Overlap, Extreme: Boolean;
     ThreadCount: Integer;
-    // The curve pen and smoothing: the drawing test needs them to tell a curve
-    // from the grid and the axes, and to take both drawing paths.
+    // The pen and antialiasing: the drawing checks need them to tell the curve
+    // apart from the grid and the axes, and to take both drawing paths.
     Antialias: Boolean;
     PenColor: TColor;
     PenWidth: Integer;
     // Tracing is switched on per formula.
     TraceFormula: Boolean;
+    {
+      THE CONDITIONS OF A MEASUREMENT, added on 08.09.2026.
+
+      The size of the plot area and the sampling quality used to be fixed: a
+      600 by 600 square at the default quality. That was enough for counting
+      points, but not for questions about what is DRAWN. The panel's area is
+      wide, its proportions decide the height of the view, and the quality
+      decides where the last point before the edge lands. A probe that asks
+      about pixels has to be able to reproduce the conditions in which a person
+      saw them.
+
+      Zero means "as before": Width and Height fall back to GraphSize, and
+      Quality stays whatever the component set.
+    }
+    Width, Height: Integer;
+    Quality: Integer;
+    {
+      The time budget for the intersection search, in milliseconds. Zero keeps
+      whatever the harness set. The panel gives the search 1000 ms, and a probe
+      that asks how many intersections are found has to be able to reproduce
+      that budget: the search stops when the budget runs out and keeps what it
+      has found so far.
+    }
+    OverlapTime: Integer;
   end;
 
   TGraphHost = class
@@ -75,14 +99,14 @@ procedure Section(const Description: string);
 function TotalCount: Integer;
 function FailedCount: Integer;
 {
-  The run log in UTF-8. The console writes in the OEM code page and mangles
-  non-ASCII text when redirected, so the result is read from this file.
+  The run log, written in UTF-8. The console writes in the OEM code page and
+  mangles non-ASCII text when redirected, so the result is read from this file.
 }
 procedure SaveReport(const FileName: string);
 
 // The shortest distance from a point to a set; infinity for an empty set.
 function NearestDistance(const Points: TPointDArray; const X, Y: Double): Double;
-// Every point of an array of curves as one list.
+// Every point of the curve array as one list.
 function FlattenCurves(const Curves: TCurveDArray): TPointDArray;
 function OverlapPoints(const Graph: TGraph): TPointDArray;
 
@@ -129,6 +153,10 @@ begin
   Result.MaxX := AMaxX;
   Result.MaxY := AMaxY;
   Result.MaxDepth := 100;
+  Result.Width := 0;
+  Result.Height := 0;
+  Result.Quality := 0;
+  Result.OverlapTime := 0;
   Result.Overlap := True;
   Result.ThreadCount := 0;
   Result.Antialias := True;
@@ -203,8 +231,7 @@ var
   I: Integer;
 begin
   SetLength(Result, Length(Graph.OverlapArray));
-  for I := Low(Result) to High(Result) do
-    Result[I] := Graph.OverlapArray[I].Point;
+  for I := Low(Result) to High(Result) do Result[I] := Graph.OverlapArray[I].Point;
 end;
 
 constructor TGraphHost.Create;
@@ -254,7 +281,10 @@ begin
   FGraph.OnOverlap := HandleOverlap;
   FGraph.OnExtreme := HandleExtreme;
   FGraph.Parent := FForm;
-  FGraph.SetBounds(0, 0, GraphSize, GraphSize);
+  FGraph.SetBounds(0, 0,
+    IfThen(GraphCase.Width > 0, GraphCase.Width, GraphSize),
+    IfThen(GraphCase.Height > 0, GraphCase.Height, GraphSize));
+  if GraphCase.Quality > 0 then FGraph.Quality := GraphCase.Quality;
   if GraphCase.Polar then
     FGraph.CS := csPolar
   else
@@ -273,7 +303,10 @@ begin
   end;
   FGraph.HighPrecision := GraphCase.HighPrecision;
   FGraph.OverlapMaxDepth := GraphCase.MaxDepth;
-  FGraph.OverlapMaxTime := MaxTimeLimit;
+  if GraphCase.OverlapTime > 0 then
+    FGraph.OverlapMaxTime := GraphCase.OverlapTime
+  else
+    FGraph.OverlapMaxTime := MaxTimeLimit;
   if GraphCase.ThreadCount > 0 then FGraph.ThreadCount := GraphCase.ThreadCount;
   if GraphCase.AFormula <> '' then
     FGraph.Formula.Add(GraphCase.AFormula, True, True, GraphCase.TraceFormula);

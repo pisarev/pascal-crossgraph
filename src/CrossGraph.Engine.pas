@@ -45,6 +45,7 @@ const
 
 const
   WholeRange: TRange = (Min: 0; Max: Angle360);
+  SkipPixels = 4;
 
 type
   TQuarterKind = (qkA, qkB, qkC, qkD, qkAB, qkBC, qkCD, qkDA, qkABCD);
@@ -1512,6 +1513,7 @@ var
   Move, Prev: Extended;
   K: TGapType;
   Pair: TPair;
+  PendingSkip: Boolean;
 
   function Overtime: Boolean;
   begin
@@ -1636,6 +1638,7 @@ begin
         J := 0;
         Index := CrossGraph.Types.New(FPointArray);
         FillChar(Pair, SizeOf(TPair), 0);
+        PendingSkip := False;
         while not Stopped and not Overtime and (J < Length(FWorkData.MapArray)) do
         begin
           Shift := 0;
@@ -1655,6 +1658,15 @@ begin
               Pair.HasCursor := False;
             end
             else begin
+              if PendingSkip and Apart then
+              begin
+                PendingSkip := False;
+                if Abs(FPointToCursor(Pair.Next).X - FPointToCursor(Pair.Prev).X) > SkipPixels then
+                begin
+                  Index := CrossGraph.Types.New(FPointArray);
+                  Pair.HasCursor := False;
+                end;
+              end;
               if Apart then
               begin
                 CrossGraph.Types.Add(FPointArray, Pair.Next, Index);
@@ -1680,6 +1692,8 @@ begin
             end;
           end;
           FlushSkip;
+          if (J + 1 < Length(FWorkData.MapArray)) and Pair.HasPrev then
+            PendingSkip := True;
           Inc(J);
         end;
         Index := Length(FPointArray);
@@ -3186,6 +3200,11 @@ var
   Edge: TPointD;
   Cut: Boolean;
 
+  function Skipped(const A, B: TPointD): Boolean;
+  begin
+    Result := Abs(PointToCursor(B).X - PointToCursor(A).X) > SkipPixels;
+  end;
+
   function LastShown(out Point: TPointD): Boolean;
   var
     K: Integer;
@@ -3211,7 +3230,8 @@ begin
       Cut := (J > Low(Source)) or FThreadList[I].Gap[gtBack] or ((Prior >= 0) and (((I - Prior) > 1) or
         FThreadList[Prior].Gap[gtFace]));
       if not Cut and (Prior >= 0) and (Length(Source[J]) > 0) and LastShown(Edge) then
-        Cut := Torn(True, Edge, Source[J][Low(Source[J])]);
+        Cut := Torn(True, Edge, Source[J][Low(Source[J])]) or
+          Skipped(Edge, Source[J][Low(Source[J])]);
       if Cut then CrossGraph.Types.New(FEntireArray);
       CrossGraph.Types.Add(FEntireArray, Source, J);
     end;
@@ -3419,7 +3439,7 @@ begin
     FOverlapThread.MarkSpacing := FMarkSpacing;
     FOverlapThread.HighPrecision := FHighPrecision;
     FOverlapThread.MaxDepth := FOverlapMaxDepth[FCS];
-    FOverlapThread.MaxTime := FOverlapMaxTime[FCS];
+    FOverlapThread.MaxTime := FOverlapMaxTime[FCS] + FOverlapMaxTime[FCS] * Quality div 10;
     FOverlapThread.Formula := FFormula;
     FOverlapThread.Epsilon := FEpsilon;
     if FCS = csPolar then
