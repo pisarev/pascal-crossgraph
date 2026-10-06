@@ -52,14 +52,35 @@ through `BDS_BIN`.
 
 Delphi **10.2 Tokyo and newer**, or Free Pascal **3.2.2 and newer** - the stable
 compiler a normal install brings. The parser next door has always built with
-3.2.2; the plotting engine does now as well, checked by building and running the
-battery on it: 149 checks and a 200-run stress pass on Free Pascal 3.2.2 with
-Lazarus 3.6.0.
+3.2.2; the plotting engine does now as well. Measured on 5 October 2026 on Free
+Pascal 3.2.2 with Lazarus 3.6.0: `EngineTests` gave **158 checks, no failures**,
+and `EngineStress` its **200-run pass** - nothing empty, no formula lost, no
+broken bounds, no exceptions, 78 s. The stress program is run separately, and
+that is worth saying: the FPC route of the battery builds `EngineTests` and
+`EngineStress`. The number that stood here before - 149 checks - belonged to an older run
+and carried no signature, so there was nothing to identify it with.
 
 The Delphi side is measured rather than assumed: before a release all eight
 units of the engine are compiled one at a time on six installations - 10.2
 Tokyo, 10.3 Rio, 10.4 Sydney, 11 Alexandria, 12 Athens and 13. Anything older
 than 10.2 is untested and not claimed.
+
+The Lazarus side is measured the same way, and it now covers ten of the eleven
+versions the OPM listing declares. Measured on Lazarus 3.0, 3.2, 3.4, 3.6, 3.8,
+4.0, 4.2, 4.4, 4.6 and 4.8: each installation builds the three packages and the
+`GettingStarted` sample from a clean `--pcp` configuration of its own, forty
+builds with nothing failing. The eleventh is Trunk, which is not measured and
+not claimed.
+
+Widget sets are a separate axis and a shorter list. Measured widget sets:
+win32/win64, gtk2, gtk3. On the two Linux sets the sample is not merely
+compiled - it is started under Xvfb and has to stay up, which is the check that
+matters: a build stays green while the program dies on its first line, which is
+exactly what this sample once did under FPC on Linux. Under qt5 the three
+packages build and the sample does not link - the `libQt5Pas` that Ubuntu 22.04
+ships is older than Lazarus 3.6 expects and lacks two entry points it calls.
+qt6 is unmeasured as well: Ubuntu 22.04 carries no Qt6Pas at all. Neither is
+claimed.
 
 Two things used to stand in the way, and both are gone. `CrossVision.Geometry`
 sorted points with an anonymous comparer, and function references arrived only
